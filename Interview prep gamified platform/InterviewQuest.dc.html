@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<style>
+body{margin:0;background:oklch(0.99 0.002 255);}
+* { box-sizing: border-box; }
+a { color: oklch(0.5 0.16 255); text-decoration: none; }
+a:hover { color: oklch(0.42 0.17 255); text-decoration: underline; }
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:oklch(0.85 0.006 255);border-radius:4px}
+@keyframes iq-sway { 0%,100%{transform:rotate(-1.5deg)} 50%{transform:rotate(1.5deg)} }
+@keyframes iq-pop { 0%{transform:scale(0.9);opacity:0} 60%{transform:scale(1.04);opacity:1} 100%{transform:scale(1)} }
+@keyframes iq-confetti { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(60px) rotate(220deg);opacity:0} }
+@keyframes iq-spin { to { transform: rotate(360deg); } }
+.iq-card { transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
+.iq-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -10px oklch(0.2 0.02 255 / 0.25); }
+.iq-btn { transition: transform .1s ease, background .14s ease, box-shadow .14s ease; }
+.iq-btn:active { transform: scale(0.96); }
+.iq-flip-inner { transform-style: preserve-3d; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.iq-flip-inner.is-flipped { transform: rotateY(180deg); }
+.iq-flip-face { backface-visibility: hidden; }
+.iq-flip-back { transform: rotateY(180deg); }
+.iq-row-scroll { scroll-snap-type: x proximity; }
+.iq-row-scroll > * { scroll-snap-align: start; }
+.iq-day { transition: transform .1s ease, box-shadow .12s ease; }
+.iq-day:hover { transform: translateY(-1px); }
+</style>
+</helmet>
+
+<sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Source Sans 3',sans-serif;background:oklch(0.99 0.002 255);padding:24px">
+  <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center">
+      <div style="width:44px;height:44px;border-radius:10px;background:oklch(0.55 0.16 255);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px">IQ</div>
+      <div style="font-size:22px;font-weight:700;color:oklch(0.2 0.006 255)">InterviewQuest</div>
+      <div style="font-size:13.5px;color:oklch(0.5 0.006 255)">16 days, 16 modules — practice, quiz, and get ready.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:22px">
+      <label style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.006 255)">Your name</label>
+      <input value="{{ loginNameInput }}" oninput="{{ onLoginInputChange }}" placeholder="e.g. Priya" style="font-family:'Source Sans 3',sans-serif;font-size:15px;padding:10px 12px;border:1px solid oklch(0.87 0.006 255);border-radius:7px;outline:none;color:oklch(0.2 0.006 255)"></input>
+      <button onclick="{{ handleLogin }}" style="margin-top:4px;background:oklch(0.55 0.16 255);color:#fff;border:none;border-radius:7px;padding:11px 14px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif" style-hover="background:oklch(0.48 0.17 255)">Enter</button>
+      <div style="font-size:12px;color:oklch(0.55 0.006 255);text-align:center;margin-top:2px">No password — just pick a name. Progress is saved on this device.</div>
+    </div>
+    <sc-if value="{{ hasOtherUsers }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:11.5px;font-weight:600;color:oklch(0.55 0.006 255);text-transform:uppercase;letter-spacing:.04em">Continue as</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ otherUsers }}" as="u" hint-placeholder-count="2">
+          <button onclick="{{ u.select }}" style="background:oklch(0.97 0.004 255);border:1px solid oklch(0.9 0.006 255);border-radius:20px;padding:7px 14px;font-size:13.5px;color:oklch(0.25 0.006 255);cursor:pointer;font-family:'Source Sans 3',sans-serif" style-hover="background:oklch(0.94 0.006 255)">{{ u.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:flex;font-family:'Source Sans 3',sans-serif;background:oklch(0.99 0.002 255);color:oklch(0.2 0.006 255)">
+
+  <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ true }}">
+  <div style="width:220px;flex:none;background:oklch(0.97 0.004 255);border-right:1px solid oklch(0.9 0.006 255);display:flex;flex-direction:column;padding:16px 12px;gap:4px;height:100vh;position:sticky;top:0">
+    <div style="display:flex;align-items:center;gap:9px;padding:6px 8px 16px">
+      <div style="width:26px;height:26px;border-radius:7px;background:oklch(0.55 0.16 255);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px">IQ</div>
+      <div style="font-size:14.5px;font-weight:700">InterviewQuest</div>
+    </div>
+    <sc-for list="{{ navItems }}" as="nav" hint-placeholder-count="7">
+      <button onclick="{{ nav.select }}" style="display:flex;align-items:center;gap:10px;text-align:left;background:{{ nav.bg }};border:none;border-radius:6px;padding:9px 10px;font-size:14px;font-weight:{{ nav.weight }};color:{{ nav.color }};cursor:pointer;font-family:'Source Sans 3',sans-serif" style-hover="background:oklch(0.94 0.006 255)">
+        <span style="width:7px;height:7px;border-radius:50%;background:{{ nav.dotColor }};flex:none"></span>{{ nav.label }}
+      </button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding:10px 8px;border-top:1px solid oklch(0.9 0.006 255);margin-top:8px">
+      <div style="font-size:13px;font-weight:600">{{ currentUser }}</div>
+      <button onclick="{{ logout }}" style="text-align:left;background:none;border:none;padding:0;font-size:12px;color:oklch(0.5 0.006 255);cursor:pointer;font-family:'Source Sans 3',sans-serif">Switch user</button>
+      <div style="display:flex;gap:10px;margin-top:2px">
+        <button onclick="{{ saveProgressToFile }}" style="text-align:left;background:none;border:none;padding:0;font-size:11.5px;color:oklch(0.5 0.006 255);cursor:pointer;font-family:'Source Sans 3',sans-serif;text-decoration:underline">Save progress</button>
+        <label style="font-size:11.5px;color:oklch(0.5 0.006 255);cursor:pointer;text-decoration:underline">
+          Load progress
+          <input type="file" accept="application/json" onchange="{{ loadProgressFromFile }}" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden"></input>
+        </label>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;padding-bottom:{{ mobileBottomPad }}">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid oklch(0.9 0.006 255);background:#fff;position:sticky;top:0;z-index:5;flex-wrap:wrap">
+      <div style="font-size:16px;font-weight:700">{{ viewTitle }}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px;background:oklch(0.96 0.03 60);border-radius:20px;padding:6px 12px" title="Streak">
+          <span style="font-size:13px;font-weight:700;color:oklch(0.45 0.1 60)">{{ streak }}d</span>
+          <span style="font-size:11.5px;color:oklch(0.5 0.08 60)">streak</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:oklch(0.95 0.05 90);border-radius:20px;padding:6px 12px">
+          <span style="font-size:13px;font-weight:700;color:oklch(0.4 0.1 90)">{{ tokens }}</span>
+          <span style="font-size:11.5px;color:oklch(0.48 0.08 90)">tokens</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:oklch(0.94 0.05 145);border-radius:20px;padding:6px 12px">
+          <span style="font-size:12.5px;font-weight:700;color:oklch(0.45 0.14 145)">{{ daysComplete }}/16</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto;padding:{{ contentPadding }}">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;max-width:960px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:20px;font-weight:700">Welcome back, {{ currentUser }}</div>
+          <div style="font-size:14px;color:oklch(0.5 0.006 255)">{{ homeSubline }}</div>
+        </div>
+
+        <div style="display:flex;flex-direction:{{ plantSectionDir }};gap:20px;background:linear-gradient(180deg,oklch(0.97 0.02 145),oklch(0.95 0.02 145) 70%,oklch(0.88 0.03 90) 70%,oklch(0.88 0.03 90));border:1px solid oklch(0.88 0.02 145);border-radius:12px;padding:22px;align-items:center">
+          <svg viewBox="0 0 120 160" style="width:130px;height:170px;flex:none;animation:iq-sway 5s ease-in-out infinite;transform-origin:60px 150px">
+            <ellipse cx="60" cy="150" rx="46" ry="8" fill="oklch(0.82 0.03 90)"></ellipse>
+            <line x1="60" y1="150" x2="60" y2="{{ plantStemTopY }}" stroke="oklch(0.5 0.1 145)" stroke-width="5" stroke-linecap="round"></line>
+            <ellipse cx="42" cy="{{ plantLeaf1Y }}" rx="16" ry="9" fill="oklch(0.6 0.13 145)" opacity="{{ plantLeaf1Op }}" transform="rotate(-25 42 {{ plantLeaf1Y }})"></ellipse>
+            <ellipse cx="78" cy="{{ plantLeaf1Y }}" rx="16" ry="9" fill="oklch(0.6 0.13 145)" opacity="{{ plantLeaf1Op }}" transform="rotate(25 78 {{ plantLeaf1Y }})"></ellipse>
+            <ellipse cx="38" cy="{{ plantLeaf2Y }}" rx="15" ry="8" fill="oklch(0.57 0.13 150)" opacity="{{ plantLeaf2Op }}" transform="rotate(-20 38 {{ plantLeaf2Y }})"></ellipse>
+            <ellipse cx="82" cy="{{ plantLeaf2Y }}" rx="15" ry="8" fill="oklch(0.57 0.13 150)" opacity="{{ plantLeaf2Op }}" transform="rotate(20 82 {{ plantLeaf2Y }})"></ellipse>
+            <circle cx="60" cy="{{ plantStemTopY }}" r="7" fill="{{ plantFlowerColor }}" opacity="{{ plantBudOp }}"></circle>
+            <g opacity="{{ plantFlowerOp }}" transform="translate(60 {{ plantStemTopY }}) scale({{ plantFlowerScale }})">
+              <circle cx="0" cy="-11" r="7" fill="{{ plantFlowerColor }}"></circle>
+              <circle cx="0" cy="11" r="7" fill="{{ plantFlowerColor }}"></circle>
+              <circle cx="-11" cy="0" r="7" fill="{{ plantFlowerColor }}"></circle>
+              <circle cx="11" cy="0" r="7" fill="{{ plantFlowerColor }}"></circle>
+              <circle cx="0" cy="0" r="6" fill="oklch(0.95 0.05 90)"></circle>
+            </g>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:200px">
+            <div style="font-size:14px;font-weight:700">Your plant · {{ daysComplete }}/16 days</div>
+            <div style="font-size:12.5px;color:oklch(0.4 0.02 145)">{{ plantHint }}</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <sc-for list="{{ flowerBadges }}" as="b" hint-placeholder-count="4">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                  <svg viewBox="0 0 40 40" style="width:34px;height:34px">
+                    <circle cx="20" cy="12" r="6.5" fill="{{ b.fill }}" opacity="{{ b.op }}"></circle>
+                    <circle cx="20" cy="28" r="6.5" fill="{{ b.fill }}" opacity="{{ b.op }}"></circle>
+                    <circle cx="12" cy="20" r="6.5" fill="{{ b.fill }}" opacity="{{ b.op }}"></circle>
+                    <circle cx="28" cy="20" r="6.5" fill="{{ b.fill }}" opacity="{{ b.op }}"></circle>
+                    <circle cx="20" cy="20" r="5.5" fill="{{ b.centerFill }}" opacity="{{ b.op }}"></circle>
+                  </svg>
+                  <span style="font-size:10.5px;font-weight:700;color:{{ b.labelColor }}">{{ b.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasNextModule }}" hint-placeholder-val="{{ false }}">
+        <button onclick="{{ nextModule.select }}" class="iq-card" style="text-align:left;display:flex;align-items:center;gap:14px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:12px;padding:18px;cursor:pointer;font-family:'Source Sans 3',sans-serif">
+          <div style="width:38px;height:38px;flex:none;border-radius:10px;background:{{ nextModule.iconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ nextModule.iconMono }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Up next — Day {{ nextModule.day }}</div>
+            <div style="font-size:15px;font-weight:700">{{ nextModule.name }}</div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:oklch(0.55 0.16 255);flex:none">Open →</span>
+        </button>
+        </sc-if>
+
+        <sc-if value="{{ hasContinueRow }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:14px;font-weight:700">Continue practicing</div>
+          <div class="iq-row-scroll" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px">
+            <sc-for list="{{ continueRow }}" as="r" hint-placeholder-count="4">
+              <button onclick="{{ r.select }}" class="iq-card" style="text-align:left;flex:none;width:190px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:14px;cursor:pointer;font-family:'Source Sans 3',sans-serif;display:flex;flex-direction:column;gap:8px">
+                <div style="width:26px;height:26px;border-radius:7px;background:{{ r.iconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">{{ r.iconMono }}</div>
+                <div style="font-size:13px;font-weight:600;line-height:1.35">{{ r.title }}</div>
+                <div style="font-size:11px;color:oklch(0.5 0.006 255)">{{ r.topicName }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:{{ homeStatsCols }};gap:14px">
+          <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;font-weight:600;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Progress</div>
+            <div style="font-size:24px;font-weight:700;color:oklch(0.5 0.14 145)">{{ daysComplete }}/16</div>
+            <div style="height:6px;background:oklch(0.93 0.006 255);border-radius:3px;overflow:hidden"><div style="height:100%;width:{{ progressPct }}%;background:oklch(0.55 0.14 145)"></div></div>
+            <button onclick="{{ goRoadmap }}" style="align-self:flex-start;background:oklch(0.94 0.05 145);color:oklch(0.4 0.12 145);border:none;border-radius:6px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">View roadmap →</button>
+          </div>
+          <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;font-weight:600;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Redeemable tokens</div>
+            <div style="font-size:24px;font-weight:700">{{ tokens }}</div>
+            <div style="font-size:12px;color:oklch(0.55 0.006 255)">Earned by finishing a full day's module — lesson, coding test, Q&A, flashcards and the end-of-day test.</div>
+            <button onclick="{{ goStore }}" style="align-self:flex-start;background:oklch(0.95 0.05 90);color:oklch(0.4 0.1 90);border:none;border-radius:6px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Redeem store →</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:14px;font-weight:700">Jump into a mode</div>
+          <div style="display:grid;grid-template-columns:{{ modeCardsCols }};gap:12px">
+            <sc-for list="{{ modeCards }}" as="m" hint-placeholder-count="3">
+              <button onclick="{{ m.select }}" class="iq-card" style="text-align:left;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:16px;cursor:pointer;font-family:'Source Sans 3',sans-serif;display:flex;flex-direction:column;gap:8px" style-hover="border-color:oklch(0.55 0.16 255)">
+                <div style="width:32px;height:32px;border-radius:9px;background:{{ m.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700">{{ m.mono }}</div>
+                <div style="font-size:14.5px;font-weight:700">{{ m.title }}</div>
+                <div style="font-size:12.5px;color:oklch(0.5 0.006 255)">{{ m.desc }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isRoadmap }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:22px;max-width:1000px">
+        <div style="font-size:13.5px;color:oklch(0.5 0.006 255)">16 modules, one per day. Finish all five parts — lesson, coding test, Q&amp;A, flashcards, and the end-of-day test — to mark a day green and earn {{ moduleTokens }} tokens.</div>
+        <div style="display:grid;grid-template-columns:{{ dayGridCols }};gap:8px">
+          <sc-for list="{{ moduleDays }}" as="d" hint-placeholder-count="16">
+            <button onclick="{{ d.select }}" title="{{ d.title }}" class="iq-day" style="display:flex;flex-direction:column;align-items:center;gap:4px;background:{{ d.bg }};border:{{ d.border }};border-radius:9px;padding:12px 4px;cursor:pointer;font-family:'Source Sans 3',sans-serif">
+              <span style="font-size:12px;font-weight:700;color:{{ d.color }}">Day {{ d.day }}</span>
+              <span style="font-size:9.5px;font-weight:600;color:{{ d.color }};opacity:0.85;text-align:center;line-height:1.2">{{ d.name }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:20px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="width:36px;height:36px;flex:none;border-radius:10px;background:{{ modTopicIconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ modTopicIconMono }}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:11px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Day {{ modDay }}</div>
+              <div style="font-size:17px;font-weight:700">{{ modTopicName }}</div>
+            </div>
+            <sc-if value="{{ modComplete }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12.5px;font-weight:700;color:oklch(0.5 0.14 145);background:oklch(0.94 0.05 145);padding:5px 12px;border-radius:20px">✓ Day complete</span>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;gap:16px;border-bottom:1px solid oklch(0.9 0.006 255);flex-wrap:wrap">
+            <sc-for list="{{ modTabsView }}" as="mt" hint-placeholder-count="5">
+              <button onclick="{{ mt.select }}" style="background:none;border:none;padding:0 0 9px;font-size:13px;font-weight:{{ mt.weight }};color:{{ mt.color }};border-bottom:2px solid {{ mt.border }};cursor:pointer;font-family:'Source Sans 3',sans-serif">{{ mt.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ isModTabLesson }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:oklch(0.985 0.006 255);border:1px solid oklch(0.92 0.006 255);border-radius:10px;padding:10px;overflow-x:auto">
+              <sc-if value="{{ modDiagJsScope }}" hint-placeholder-val="{{ true }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="10" width="340" height="110" rx="8" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.35"></rect>
+                <text x="20" y="26" font-size="11" fill="oklch(0.45 0.006 255)">Global scope</text>
+                <rect x="30" y="35" width="300" height="75" rx="8" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.6"></rect>
+                <text x="40" y="51" font-size="11" fill="oklch(0.45 0.006 255)">Function scope — var lives here</text>
+                <rect x="50" y="60" width="260" height="40" rx="8" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="2"></rect>
+                <text x="60" y="84" font-size="11" font-weight="700" fill="{{ modLesson.iconColor }}">{ block scope — let/const, TDZ until here }</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagJsClosures }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="10" width="340" height="110" rx="10" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.4"></rect>
+                <text x="22" y="28" font-size="11" fill="oklch(0.45 0.006 255)">outer() — creates let count = 0</text>
+                <circle cx="55" cy="72" r="18" fill="{{ modLesson.iconColor }}" opacity="0.18" stroke="{{ modLesson.iconColor }}" stroke-width="2"></circle>
+                <text x="42" y="76" font-size="10">count</text>
+                <rect x="120" y="45" width="200" height="55" rx="8" fill="{{ modLesson.iconColor }}" opacity="0.1" stroke="{{ modLesson.iconColor }}" stroke-width="2"></rect>
+                <text x="132" y="65" font-size="11" font-weight="700" fill="{{ modLesson.iconColor }}">inner() — the returned function</text>
+                <text x="132" y="82" font-size="10" fill="oklch(0.4 0.006 255)">still reads/writes count after outer() returns</text>
+                <line x1="120" y1="72" x2="73" y2="72" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagJsThis }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <circle cx="40" cy="65" r="8" fill="{{ modLesson.iconColor }}"></circle>
+                <text x="14" y="95" font-size="10" fill="oklch(0.45 0.006 255)">call-site</text>
+                <line x1="48" y1="60" x2="140" y2="25" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <line x1="48" y1="65" x2="140" y2="65" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <line x1="48" y1="70" x2="140" y2="105" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <rect x="140" y="10" width="205" height="28" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.1" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="150" y="28" font-size="10.5">obj.fn() → this = obj</text>
+                <rect x="140" y="50" width="205" height="28" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.1" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="150" y="68" font-size="10.5">fn() plain call → this = undefined</text>
+                <rect x="140" y="90" width="205" height="28" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.1" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="150" y="108" font-size="10.5">arrow fn → this = lexical (from definition)</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagJsCoercion }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="20" y="20" width="90" height="30" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="30" y="39" font-size="10.5">[] (object)</text>
+                <rect x="20" y="80" width="90" height="30" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="30" y="99" font-size="10.5">false (boolean)</text>
+                <line x1="110" y1="35" x2="180" y2="58" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <line x1="110" y1="95" x2="180" y2="72" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <text x="118" y="55" font-size="9.5" fill="oklch(0.5 0.006 255)">== coerces both toward number</text>
+                <rect x="185" y="50" width="150" height="30" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.18" stroke="{{ modLesson.iconColor }}" stroke-width="2"></rect>
+                <text x="198" y="69" font-size="11" font-weight="700">both become 0 → true</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagJsAsync }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="15" width="105" height="95" rx="6" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="18" y="30" font-size="10" font-weight="700">1. Call stack</text>
+                <text x="18" y="46" font-size="9.5" fill="oklch(0.5 0.006 255)">sync code runs</text>
+                <rect x="127" y="15" width="105" height="95" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.1" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="135" y="30" font-size="10" font-weight="700">2. Microtasks</text>
+                <text x="135" y="46" font-size="9.5" fill="oklch(0.5 0.006 255)">.then, queueMicrotask</text>
+                <circle cx="145" cy="65" r="5" fill="{{ modLesson.iconColor }}"></circle>
+                <circle cx="165" cy="65" r="5" fill="{{ modLesson.iconColor }}" opacity="0.6"></circle>
+                <rect x="244" y="15" width="106" height="95" rx="6" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></rect>
+                <text x="252" y="30" font-size="10" font-weight="700">3. Macrotasks</text>
+                <text x="252" y="46" font-size="9.5" fill="oklch(0.5 0.006 255)">setTimeout, I/O</text>
+                <circle cx="262" cy="65" r="5" fill="{{ modLesson.iconColor }}" opacity="0.4"></circle>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagJsUtils }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <text x="10" y="22" font-size="10" font-weight="700">debounce</text>
+                <line x1="10" y1="45" x2="340" y2="45" stroke="oklch(0.85 0.006 255)" stroke-width="1.5"></line>
+                <line x1="40" y1="45" x2="40" y2="32" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.4"></line>
+                <line x1="55" y1="45" x2="55" y2="32" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.4"></line>
+                <line x1="130" y1="45" x2="130" y2="20" stroke="{{ modLesson.iconColor }}" stroke-width="3"></line>
+                <text x="140" y="28" font-size="9.5" fill="oklch(0.5 0.006 255)">only the settled call fires</text>
+                <text x="10" y="85" font-size="10" font-weight="700">throttle</text>
+                <line x1="10" y1="105" x2="340" y2="105" stroke="oklch(0.85 0.006 255)" stroke-width="1.5"></line>
+                <line x1="40" y1="105" x2="40" y2="85" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+                <line x1="90" y1="105" x2="90" y2="85" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+                <line x1="140" y1="105" x2="140" y2="85" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+                <text x="150" y="98" font-size="9.5" fill="oklch(0.5 0.006 255)">fires at a steady max rate</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagReactCore }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <text x="10" y="20" font-size="10" font-weight="700">Virtual DOM (new render)</text>
+                <circle cx="40" cy="50" r="8" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></circle>
+                <line x1="40" y1="58" x2="20" y2="80" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <line x1="40" y1="58" x2="60" y2="80" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="20" cy="87" r="7" fill="{{ modLesson.iconColor }}" opacity="0.7"></circle>
+                <circle cx="60" cy="87" r="7" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></circle>
+                <text x="90" y="52" font-size="9.5" fill="oklch(0.5 0.006 255)">reconciliation diffs</text>
+                <text x="90" y="66" font-size="9.5" fill="oklch(0.5 0.006 255)">the two trees...</text>
+                <text x="220" y="20" font-size="10" font-weight="700">Real DOM (committed)</text>
+                <circle cx="250" cy="50" r="8" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></circle>
+                <line x1="250" y1="58" x2="230" y2="80" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <line x1="250" y1="58" x2="270" y2="80" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="230" cy="87" r="7" fill="{{ modLesson.iconColor }}" opacity="0.7"></circle>
+                <circle cx="270" cy="87" r="7" fill="{{ modLesson.iconColor }}" opacity="0.7"></circle>
+                <text x="185" y="108" font-size="9" fill="oklch(0.5 0.006 255)">only the changed node gets touched</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagReactHooks }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <circle cx="40" cy="20" r="6" fill="{{ modLesson.iconColor }}"></circle>
+                <text x="55" y="24" font-size="10.5">Render — component function runs</text>
+                <line x1="40" y1="26" x2="40" y2="48" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="40" cy="55" r="6" fill="{{ modLesson.iconColor }}" opacity="0.8"></circle>
+                <text x="55" y="59" font-size="10.5">Effect runs — after the DOM commits</text>
+                <line x1="40" y1="61" x2="40" y2="83" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="40" cy="90" r="6" fill="{{ modLesson.iconColor }}" opacity="0.6"></circle>
+                <text x="55" y="94" font-size="10.5">Cleanup — before the next effect run</text>
+                <line x1="40" y1="96" x2="40" y2="112" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" stroke-dasharray="3,3"></line>
+                <circle cx="40" cy="118" r="6" fill="{{ modLesson.iconColor }}" opacity="0.4"></circle>
+                <text x="55" y="122" font-size="10.5">Re-render, if deps changed — loop repeats</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagReactPerf }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <path d="M40 90 A50 50 0 0 1 140 90" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="9" opacity="0.2"></path>
+                <path d="M40 90 A50 50 0 0 1 100 41" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="9"></path>
+                <line x1="90" y1="90" x2="118" y2="53" stroke="oklch(0.3 0.006 255)" stroke-width="2.5"></line>
+                <circle cx="90" cy="90" r="4" fill="oklch(0.3 0.006 255)"></circle>
+                <text x="160" y="52" font-size="10.5" font-weight="700">Referential equality</text>
+                <text x="160" y="69" font-size="9.5" fill="oklch(0.5 0.006 255)">is what memo / useMemo / useCallback</text>
+                <text x="160" y="84" font-size="9.5" fill="oklch(0.5 0.006 255)">actually check — new object = new render</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagReactState }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="6" y="45" width="70" height="34" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="16" y="66" font-size="10">Action</text>
+                <line x1="76" y1="62" x2="100" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="100" y="45" width="70" height="34" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="108" y="66" font-size="10">Reducer</text>
+                <line x1="170" y1="62" x2="194" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="194" y="45" width="70" height="34" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="207" y="66" font-size="10">Store</text>
+                <line x1="264" y1="62" x2="288" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="288" y="45" width="66" height="34" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="294" y="60" font-size="9.5">Component</text>
+                <text x="294" y="72" font-size="9">(selector)</text>
+                <text x="10" y="105" font-size="9.5" fill="oklch(0.5 0.006 255)">a component only re-renders if its selected slice actually changed</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagReactRouting }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="45" width="90" height="36" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="24" y="67" font-size="10.5">/login</text>
+                <line x1="100" y1="63" x2="150" y2="63" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <text x="102" y="55" font-size="9" fill="oklch(0.5 0.006 255)">RequireAuth</text>
+                <rect x="150" y="45" width="120" height="36" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.2" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="164" y="67" font-size="10.5">/dashboard (protected)</text>
+                <rect x="150" y="95" width="120" height="30" rx="6" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="1.5" opacity="0.5"></rect>
+                <text x="164" y="115" font-size="10">/loan-types (public)</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagWebBasics }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="20" y="10" width="300" height="110" fill="{{ modLesson.iconColor }}" opacity="0.06" stroke="{{ modLesson.iconColor }}" stroke-width="1" stroke-dasharray="4,3"></rect>
+                <text x="26" y="24" font-size="9" fill="oklch(0.5 0.006 255)">margin</text>
+                <rect x="45" y="30" width="250" height="70" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="51" y="44" font-size="9" fill="oklch(0.45 0.006 255)">border</text>
+                <rect x="65" y="45" width="210" height="40" fill="{{ modLesson.iconColor }}" opacity="0.2" stroke="{{ modLesson.iconColor }}" stroke-width="1"></rect>
+                <text x="71" y="58" font-size="9" fill="oklch(0.45 0.006 255)">padding</text>
+                <rect x="85" y="58" width="170" height="16" fill="{{ modLesson.iconColor }}" opacity="0.4"></rect>
+                <text x="92" y="70" font-size="9" fill="#fff">content</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagGit }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <circle cx="30" cy="65" r="6" fill="{{ modLesson.iconColor }}"></circle>
+                <line x1="36" y1="65" x2="70" y2="65" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+                <circle cx="76" cy="65" r="6" fill="{{ modLesson.iconColor }}"></circle>
+                <line x1="82" y1="65" x2="110" y2="30" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+                <line x1="82" y1="65" x2="110" y2="100" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.5"></line>
+                <circle cx="116" cy="30" r="6" fill="{{ modLesson.iconColor }}"></circle>
+                <line x1="122" y1="30" x2="160" y2="30" stroke="{{ modLesson.iconColor }}" stroke-width="2"></line>
+                <circle cx="166" cy="30" r="6" fill="{{ modLesson.iconColor }}"></circle>
+                <text x="176" y="34" font-size="9.5">main</text>
+                <circle cx="116" cy="100" r="6" fill="{{ modLesson.iconColor }}" opacity="0.6"></circle>
+                <line x1="122" y1="100" x2="160" y2="100" stroke="{{ modLesson.iconColor }}" stroke-width="2" opacity="0.5"></line>
+                <circle cx="166" cy="100" r="6" fill="{{ modLesson.iconColor }}" opacity="0.6"></circle>
+                <text x="176" y="104" font-size="9.5" fill="oklch(0.5 0.006 255)">feature branch</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagMachineCoding }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="20" y="10" width="320" height="110" rx="8" fill="none" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <rect x="20" y="10" width="320" height="24" rx="8" fill="{{ modLesson.iconColor }}" opacity="0.25"></rect>
+                <circle cx="34" cy="22" r="4" fill="{{ modLesson.iconColor }}"></circle>
+                <rect x="36" y="48" width="90" height="60" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.2"></rect>
+                <rect x="135" y="48" width="90" height="60" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.2"></rect>
+                <rect x="234" y="48" width="90" height="60" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.2"></rect>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagScenario }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="6" y="45" width="60" height="34" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="14" y="66" font-size="9.5">Login</text>
+                <line x1="66" y1="62" x2="95" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="95" y="10" width="90" height="26" rx="5" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.2"></rect>
+                <text x="103" y="27" font-size="9">User details</text>
+                <rect x="95" y="49" width="90" height="26" rx="5" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.2"></rect>
+                <text x="103" y="66" font-size="9">Loan details</text>
+                <rect x="95" y="88" width="90" height="26" rx="5" fill="{{ modLesson.iconColor }}" opacity="0.12" stroke="{{ modLesson.iconColor }}" stroke-width="1.2"></rect>
+                <text x="103" y="105" font-size="9">Next repayment</text>
+                <line x1="185" y1="23" x2="230" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.2" opacity="0.5"></line>
+                <line x1="185" y1="62" x2="230" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.2" opacity="0.5"></line>
+                <line x1="185" y1="101" x2="230" y2="62" stroke="{{ modLesson.iconColor }}" stroke-width="1.2" opacity="0.5"></line>
+                <rect x="230" y="42" width="110" height="40" rx="6" fill="{{ modLesson.iconColor }}" opacity="0.22" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="242" y="66" font-size="10" font-weight="700">Dashboard</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ modDiagManagerial }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="15" y="15" width="150" height="45" rx="10" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <path d="M35 60 L25 78 L50 60 Z" fill="{{ modLesson.iconColor }}" opacity="0.15" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></path>
+                <text x="26" y="35" font-size="9.5">"Tell me about yourself"</text>
+                <text x="26" y="49" font-size="9" fill="oklch(0.5 0.006 255)">interviewer</text>
+                <rect x="195" y="65" width="150" height="45" rx="10" fill="{{ modLesson.iconColor }}" opacity="0.25" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></rect>
+                <path d="M320 65 L332 48 L310 65 Z" fill="{{ modLesson.iconColor }}" opacity="0.25" stroke="{{ modLesson.iconColor }}" stroke-width="1.5"></path>
+                <text x="206" y="85" font-size="9.5" font-weight="700">role → decision → tradeoff</text>
+                <text x="206" y="99" font-size="9" fill="oklch(0.5 0.006 255)">your 90-second answer</text>
+              </svg>
+              </sc-if>
+            </div>
+            <sc-for list="{{ modLesson.detailSections }}" as="section" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:13.5px;font-weight:700;color:oklch(0.25 0.006 255)">{{ section.heading }}</div>
+                <sc-for list="{{ section.body }}" as="p" hint-placeholder-count="2">
+                  <div style="font-size:13.5px;line-height:1.65;color:oklch(0.3 0.006 255)">{{ p }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="background:oklch(0.985 0.006 255);border:1px solid oklch(0.92 0.006 255);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ modLesson.bullets }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.5;color:oklch(0.35 0.006 255)">
+                  <span style="width:6px;height:6px;border-radius:50%;background:{{ modLesson.iconColor }};margin-top:6px;flex:none"></span>
+                  <span>{{ b }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:12.5px;font-weight:700;color:oklch(0.45 0.006 255)">Reported interview questions, answered</div>
+              <sc-for list="{{ modLesson.askedList }}" as="a" hint-placeholder-count="3">
+                <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:5px">
+                  <div style="font-size:13px;font-weight:600">{{ a.q }}</div>
+                  <div style="font-size:12.5px;line-height:1.55;color:oklch(0.4 0.006 255)">{{ a.a }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:12.5px;font-weight:700;color:oklch(0.45 0.006 255)">Go deeper</div>
+              <sc-for list="{{ modLesson.learnList }}" as="l" hint-placeholder-count="3">
+                <div style="background:oklch(0.97 0.006 255);border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:5px">
+                  <div style="font-size:12.5px;font-weight:600">{{ l.q }}</div>
+                  <div style="font-size:12.5px;line-height:1.55;color:oklch(0.4 0.006 255)">{{ l.a }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isModTabCode }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-if value="{{ modHasCode }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ modCode }}" as="mc" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:9px;padding:12px 14px">
+                  <div style="font-size:13.5px">{{ mc.title }}</div>
+                  <sc-if value="{{ mc.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;color:oklch(0.5 0.14 145);flex:none">✓ done</span></sc-if>
+                  <sc-if value="{{ mc.notDone }}" hint-placeholder-val="{{ true }}"><button onclick="{{ mc.go }}" class="iq-btn" style="flex:none;background:oklch(0.55 0.16 255);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Go</button></sc-if>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ modHasNoCode }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13px;color:oklch(0.5 0.006 255)">No coding questions for this topic — this part of the day auto-completes.</div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isModTabQA }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ modChains }}" as="mq" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:9px;padding:12px 14px">
+                <div style="font-size:13.5px">{{ mq.main }}</div>
+                <sc-if value="{{ mq.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;color:oklch(0.5 0.14 145);flex:none">✓ done</span></sc-if>
+                <sc-if value="{{ mq.notDone }}" hint-placeholder-val="{{ true }}"><button onclick="{{ mq.go }}" class="iq-btn" style="flex:none;background:oklch(0.58 0.14 300);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Go</button></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isModTabFlash }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;max-width:420px">
+            <div style="font-size:13px;color:oklch(0.5 0.006 255)">{{ modCardsDone }}/{{ modCardsCount }} known in today's deck.</div>
+            <button onclick="{{ goModuleFlashcards }}" class="iq-btn" style="align-self:flex-start;background:oklch(0.5 0.14 145);color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Open flashcards →</button>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isModTabTest }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;max-width:640px">
+            <div style="font-size:12.5px;color:oklch(0.5 0.006 255)">{{ dayTestTotal }} questions from today's flashcards. Score {{ dayTestPassMark }} or better to pass.</div>
+            <sc-for list="{{ dayTestQs }}" as="dq" hint-placeholder-count="5">
+              <div style="display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:14px">
+                <div style="font-size:13px;font-weight:600">{{ dq.n }}. {{ dq.q }}</div>
+                <sc-for list="{{ dq.options }}" as="opt" hint-placeholder-count="4">
+                  <button onclick="{{ opt.select }}" disabled="{{ opt.disabled }}" style="text-align:left;background:{{ opt.bg }};border:1px solid {{ opt.border }};border-radius:7px;padding:9px 12px;font-size:12px;line-height:1.45;cursor:pointer;font-family:'Source Sans 3',sans-serif;display:flex;justify-content:space-between;gap:8px">
+                    <span>{{ opt.text }}</span><span style="flex:none">{{ opt.icon }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+            <sc-if value="{{ dayTestSubmitted }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div style="font-size:14px;font-weight:700;color:{{ dayTestResultColor }}">{{ dayTestResultLabel }}</div>
+                <button onclick="{{ retakeDayTest }}" class="iq-btn" style="background:oklch(0.96 0.006 255);border:1px solid oklch(0.88 0.006 255);border-radius:7px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Retake test</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ dayTestNotSubmitted }}" hint-placeholder-val="{{ true }}">
+              <button onclick="{{ submitDayTest }}" disabled="{{ dayTestSubmitDisabled }}" class="iq-btn" style="align-self:flex-start;background:oklch(0.55 0.16 255);color:#fff;border:none;border-radius:7px;padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Submit test</button>
+            </sc-if>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isPractice }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ noSelectedCode }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:8px;max-width:900px">
+          <sc-for list="{{ codeQuestionsView }}" as="q" hint-placeholder-count="6">
+            <button onclick="{{ q.select }}" class="iq-card" style="text-align:left;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:9px;padding:14px 16px;cursor:pointer;font-family:'Source Sans 3',sans-serif;display:flex;align-items:center;gap:12px" style-hover="border-color:oklch(0.55 0.16 255)">
+              <div style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ q.iconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">{{ q.iconMono }}</div>
+              <div style="display:flex;flex-direction:column;gap:4px;min-width:0;flex:1">
+                <div style="font-size:14px;font-weight:600">{{ q.title }}</div>
+                <div style="font-size:12px;color:oklch(0.5 0.006 255)">{{ q.topicName }}</div>
+              </div>
+              <sc-if value="{{ q.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:oklch(0.5 0.14 145);flex:none">✓ done</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ hasSelectedCode }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:1100px">
+          <button onclick="{{ clearSelectedCode }}" style="align-self:flex-start;background:none;border:none;color:oklch(0.5 0.006 255);font-size:13px;cursor:pointer;font-family:'Source Sans 3',sans-serif">← Back to challenges</button>
+          <div style="display:grid;grid-template-columns:{{ codeLayoutCols }};gap:16px;align-items:start">
+            <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div style="font-size:17px;font-weight:700">{{ selectedCode.title }}</div>
+                <span style="font-size:11px;font-weight:700;color:#fff;background:{{ selectedCode.modeBadgeColor }};padding:3px 9px;border-radius:20px">{{ selectedCode.modeLabel }}</span>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11.5px;font-weight:600;color:oklch(0.5 0.006 255);background:oklch(0.96 0.006 255);padding:4px 10px;border-radius:20px">{{ selectedCode.topicName }}</span>
+              </div>
+              <div style="height:1px;background:oklch(0.93 0.006 255)"></div>
+              <div style="font-size:14.5px;line-height:1.6;color:oklch(0.25 0.006 255)">{{ selectedCode.task }}</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:11px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Example</div>
+                <div style="background:oklch(0.97 0.006 255);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+                  <div style="font-size:12px;color:oklch(0.5 0.006 255)">{{ selectedCode.exampleLabel }}</div>
+                  <pre style="margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:oklch(0.25 0.006 255);white-space:pre-wrap">{{ selectedCode.code }}</pre>
+                  <div style="font-size:12px;color:oklch(0.5 0.006 255);margin-top:4px">How grading works</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:oklch(0.55 0.006 255)">{{ selectedCode.outputHint }}</div>
+                </div>
+              </div>
+              <sc-if value="{{ selectedCode.done }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:oklch(0.5 0.14 145)">✓ Solved</div>
+              </sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0;background:oklch(0.16 0.008 255);border-radius:10px;overflow:hidden;position:relative">
+              <sc-if value="{{ celebrate }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:8px;right:8px;left:8px;display:flex;justify-content:center;gap:6px;pointer-events:none;z-index:3;animation:iq-pop .3s ease">
+                  <sc-for list="{{ confettiBits }}" as="c" hint-placeholder-count="6">
+                    <span style="width:6px;height:10px;background:{{ c.color }};display:inline-block;animation:iq-confetti .9s ease-in forwards;animation-delay:{{ c.delay }}"></span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:oklch(0.13 0.006 255)">
+                <span style="width:9px;height:9px;border-radius:50%;background:oklch(0.6 0.16 25)"></span>
+                <span style="width:9px;height:9px;border-radius:50%;background:oklch(0.7 0.13 90)"></span>
+                <span style="width:9px;height:9px;border-radius:50%;background:oklch(0.65 0.14 145)"></span>
+                <span style="font-size:12px;color:oklch(0.65 0.006 255);margin-left:8px;font-family:'JetBrains Mono',monospace">{{ selectedCode.filename }}</span>
+              </div>
+              <textarea value="{{ codeDraft }}" oninput="{{ onCodeDraftChange }}" spellcheck="false" style="background:oklch(0.16 0.008 255);color:oklch(0.9 0.006 255);border:none;outline:none;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;padding:16px;min-height:200px;resize:vertical"></textarea>
+              <div style="display:flex;gap:8px;padding:10px 14px;background:oklch(0.13 0.006 255);border-top:1px solid oklch(0.22 0.006 255)">
+                <button onclick="{{ runCode }}" disabled="{{ running }}" class="iq-btn" style="background:oklch(0.24 0.006 255);color:oklch(0.85 0.006 255);border:none;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">{{ runLabel }}</button>
+                <button onclick="{{ submitCode }}" disabled="{{ running }}" class="iq-btn" style="background:oklch(0.55 0.16 255);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">{{ submitLabel }}</button>
+              </div>
+              <div style="display:flex;gap:0;background:oklch(0.13 0.006 255);border-top:1px solid oklch(0.22 0.006 255)">
+                <button onclick="{{ showTestcaseTab }}" style="background:none;border:none;padding:9px 16px;font-size:12px;font-weight:{{ testcaseTabWeight }};color:{{ testcaseTabColor }};border-bottom:2px solid {{ testcaseTabBorder }};cursor:pointer;font-family:'Source Sans 3',sans-serif">Testcase</button>
+                <button onclick="{{ showResultTab }}" style="background:none;border:none;padding:9px 16px;font-size:12px;font-weight:{{ resultTabWeight }};color:{{ resultTabColor }};border-bottom:2px solid {{ resultTabBorder }};cursor:pointer;font-family:'Source Sans 3',sans-serif">Result</button>
+              </div>
+              <div style="padding:16px;min-height:110px;max-height:340px;overflow:auto">
+                <sc-if value="{{ isTestcaseTab }}" hint-placeholder-val="{{ true }}">
+                  <sc-if value="{{ selectedCode.testcaseShowsCode }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:oklch(0.75 0.006 255);white-space:pre-wrap">{{ selectedCode.code }}</div>
+                  </sc-if>
+                  <sc-if value="{{ selectedCode.testcaseShowsTests }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <div style="font-size:11.5px;color:oklch(0.55 0.006 255)">Your code is graded against {{ selectedCode.testCount }} hidden test case(s):</div>
+                      <sc-for list="{{ selectedCode.testNamesView }}" as="t" hint-placeholder-count="3">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:oklch(0.8 0.006 255);display:flex;gap:8px"><span style="color:oklch(0.55 0.006 255)">{{ t.n }}.</span><span>{{ t.name }}</span></div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ isResultTab }}" hint-placeholder-val="{{ false }}">
+                  <sc-if value="{{ runViewRunning }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:oklch(0.7 0.006 255)">
+                      <span style="width:14px;height:14px;border-radius:50%;border:2px solid oklch(0.4 0.006 255);border-top-color:oklch(0.7 0.14 255);display:inline-block;animation:iq-spin .7s linear infinite"></span>
+                      Running…
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ runViewHasCompileError }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:oklch(0.22 0.08 25);border:1px solid oklch(0.4 0.14 25);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                      <div style="font-size:12px;font-weight:700;color:oklch(0.75 0.16 25)">✕ Error</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:oklch(0.85 0.1 25);white-space:pre-wrap">{{ runViewCompileErrorMsg }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ runViewHasPredictRows }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <sc-for list="{{ runViewPredictRows }}" as="row" hint-placeholder-count="3">
+                        <div style="display:flex;justify-content:space-between;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 10px;border-radius:6px;background:{{ row.bg }}">
+                          <span style="color:{{ row.color }}">{{ row.icon }} log {{ row.n }}</span>
+                          <span style="color:oklch(0.75 0.006 255)">got: {{ row.actual }}<sc-if value="{{ row.showExpected }}" hint-placeholder-val="{{ false }}"> · expected: {{ row.expected }}</sc-if></span>
+                        </div>
+                      </sc-for>
+                      <div style="display:flex;justify-content:space-between;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 10px;border-radius:6px;background:{{ runViewErrorRowBg }}">
+                        <span style="color:{{ runViewErrorRowColor }}">{{ runViewErrorRowIcon }} thrown error</span>
+                        <span style="color:oklch(0.75 0.006 255)">got: {{ runViewActualErrorLabel }} · expected: {{ runViewExpectedErrorLabel }}</span>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ runViewHasTestRows }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <sc-for list="{{ runViewTestRows }}" as="row" hint-placeholder-count="3">
+                        <div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;border-radius:6px;background:{{ row.bg }}">
+                          <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:600;color:{{ row.color }}"><span>{{ row.icon }} {{ row.name }}</span></div>
+                          <sc-if value="{{ row.hasDetail }}" hint-placeholder-val="{{ false }}">
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:oklch(0.7 0.006 255)">expected: {{ row.expectedText }} · got: {{ row.actualText }}</div>
+                          </sc-if>
+                          <sc-if value="{{ row.hasError }}" hint-placeholder-val="{{ false }}">
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:oklch(0.75 0.14 25)">{{ row.errorText }}</div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ runViewHasConsole }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+                      <div style="font-size:10.5px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">console</div>
+                      <sc-for list="{{ runViewConsoleLines }}" as="line" hint-placeholder-count="2">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:oklch(0.65 0.006 255)">{{ line }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ showRevealCode }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+                      <div style="font-size:12px;font-weight:700;color:oklch(0.65 0.14 145)">✓ {{ selectedCode.acceptedLabel }} — reference solution</div>
+                      <pre style="margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:oklch(0.85 0.006 255);white-space:pre-wrap">{{ selectedCode.answer }}</pre>
+                      <div style="font-size:13px;line-height:1.55;color:oklch(0.7 0.006 255)">{{ selectedCode.explain }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ runViewShowIdleHint }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-size:12.5px;color:oklch(0.5 0.006 255)">{{ selectedCode.idleHint }}</div>
+                  </sc-if>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isInterview }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ noSelectedChain }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:8px;max-width:760px">
+          <sc-for list="{{ chainsView }}" as="ch" hint-placeholder-count="6">
+            <button onclick="{{ ch.select }}" class="iq-card" style="text-align:left;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:9px;padding:14px 16px;cursor:pointer;font-family:'Source Sans 3',sans-serif;display:flex;align-items:center;gap:12px" style-hover="border-color:oklch(0.55 0.16 255)">
+              <div style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ ch.iconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">{{ ch.iconMono }}</div>
+              <div style="display:flex;flex-direction:column;gap:4px;min-width:0;flex:1">
+                <div style="font-size:14px;font-weight:600">{{ ch.main }}</div>
+                <div style="font-size:12px;color:oklch(0.5 0.006 255)">{{ ch.topicName }} · {{ ch.followupCount }} follow-ups</div>
+              </div>
+              <sc-if value="{{ ch.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:oklch(0.5 0.14 145);flex:none">✓ done</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ hasSelectedChain }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px;max-width:700px">
+          <button onclick="{{ clearSelectedChain }}" style="align-self:flex-start;background:none;border:none;color:oklch(0.5 0.006 255);font-size:13px;cursor:pointer;font-family:'Source Sans 3',sans-serif">← Back to questions</button>
+          <div style="background:oklch(0.96 0.006 255);border-radius:9px;padding:16px;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Interviewer asks</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.45">{{ selectedChain.main }}</div>
+          </div>
+          <div style="font-size:12.5px;color:oklch(0.5 0.006 255)">Answer it out loud, then work through the follow-ups — real interviewers rarely stop at the first answer.</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:11px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Follow-up {{ followupPosition }}</div>
+            <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:9px;padding:16px;font-size:14.5px;line-height:1.55">{{ selectedChain.currentFollowup }}</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="{{ toggleShowChainAnswer }}" style="background:oklch(0.96 0.006 255);border:1px solid oklch(0.88 0.006 255);border-radius:7px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">{{ showChainAnswerLabel }}</button>
+            <sc-if value="{{ hasMoreFollowups }}" hint-placeholder-val="{{ true }}">
+              <button onclick="{{ nextFollowup }}" style="background:oklch(0.55 0.16 255);color:#fff;border:none;border-radius:7px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Next follow-up</button>
+            </sc-if>
+            <sc-if value="{{ isLastFollowup }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ selectedChain.done }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;font-size:13px;font-weight:600;color:oklch(0.5 0.14 145)">✓ Done</div>
+              </sc-if>
+              <sc-if value="{{ selectedChainNotDone }}" hint-placeholder-val="{{ true }}">
+                <button onclick="{{ finishChain }}" style="background:oklch(0.5 0.14 145);color:#fff;border:none;border-radius:7px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Finish</button>
+              </sc-if>
+            </sc-if>
+          </div>
+          <sc-if value="{{ showChainAnswer }}" hint-placeholder-val="{{ false }}">
+          <div style="background:oklch(0.97 0.03 145);border:1px solid oklch(0.85 0.05 145);border-radius:9px;padding:16px;display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:700;color:oklch(0.4 0.1 145);text-transform:uppercase;letter-spacing:.04em">Model answer</div>
+            <div style="font-size:13.5px;line-height:1.6;color:oklch(0.25 0.006 255)">{{ selectedChain.answer }}</div>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isFlashcards }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:16px;max-width:560px;margin:0 auto">
+        <div style="text-align:center;font-size:12.5px;color:oklch(0.5 0.006 255)">Card {{ cardPosition }}</div>
+        <div onclick="{{ flipCard }}" style="cursor:pointer;min-height:220px;perspective:1400px">
+          <div class="{{ flipCardClass }}" style="position:relative;width:100%;height:220px">
+            <div class="iq-flip-face" style="position:absolute;inset:0;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px">
+              <div style="width:34px;height:34px;border-radius:9px;background:{{ currentCard.iconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ currentCard.iconMono }}</div>
+              <span style="font-size:11px;font-weight:700;color:{{ currentCard.iconColor }}">{{ currentCard.topicName }}</span>
+              <div style="font-size:16px;font-weight:600;line-height:1.5">{{ currentCard.front }}</div>
+              <div style="font-size:11.5px;color:oklch(0.6 0.006 255)">tap to reveal the answer</div>
+            </div>
+            <div class="iq-flip-face iq-flip-back" style="position:absolute;inset:0;background:oklch(0.97 0.03 145);border:1px solid oklch(0.85 0.05 145);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;overflow:auto">
+              <span style="font-size:11px;font-weight:700;color:{{ currentCard.iconColor }}">{{ currentCard.topicName }}</span>
+              <div style="font-size:15px;line-height:1.55">{{ currentCard.back }}</div>
+              <div style="font-size:11.5px;color:oklch(0.6 0.006 255)">tap to see the question</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button onclick="{{ markReview }}" class="iq-btn" style="background:oklch(0.96 0.006 255);border:1px solid oklch(0.88 0.006 255);border-radius:7px;padding:9px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Review again</button>
+          <button onclick="{{ markKnown }}" class="iq-btn" style="background:oklch(0.5 0.14 145);color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Got it</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isLessons }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:{{ lessonsDir }};gap:24px;max-width:1000px">
+        <div style="width:{{ lessonsNavWidth }};flex:none;display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ lessonNavGroups }}" as="p" hint-placeholder-count="6">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:11px;font-weight:700;color:oklch(0.55 0.006 255);text-transform:uppercase;letter-spacing:.04em;padding:4px 8px">{{ p.name }}</div>
+              <sc-for list="{{ p.items }}" as="t" hint-placeholder-count="2">
+                <button onclick="{{ t.select }}" style="text-align:left;background:{{ t.bg }};border:none;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:{{ t.weight }};color:oklch(0.25 0.006 255);cursor:pointer;font-family:'Source Sans 3',sans-serif;display:flex;align-items:center;gap:8px" style-hover="background:oklch(0.95 0.006 255)">
+                  <span style="width:20px;height:20px;flex:none;border-radius:6px;background:{{ t.iconColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">{{ t.iconMono }}</span>
+                  <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;flex:1">{{ t.label }}</span>
+                  <sc-if value="{{ t.complete }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:oklch(0.5 0.14 145);flex:none">✓</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:20px;font-weight:700">{{ selectedLesson.heading }}</div>
+            <div style="font-size:12.5px;color:oklch(0.5 0.006 255)">{{ selectedLesson.meta }}</div>
+          </div>
+
+          <sc-if value="{{ selectedLessonIsTopic }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="background:oklch(0.985 0.006 255);border:1px solid oklch(0.92 0.006 255);border-radius:10px;padding:10px;overflow-x:auto">
+              <sc-if value="{{ diagJsScope }}" hint-placeholder-val="{{ true }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="10" width="340" height="110" rx="8" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.35"></rect>
+                <text x="20" y="26" font-size="11" fill="oklch(0.45 0.006 255)">Global scope</text>
+                <rect x="30" y="35" width="300" height="75" rx="8" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.6"></rect>
+                <text x="40" y="51" font-size="11" fill="oklch(0.45 0.006 255)">Function scope — var lives here</text>
+                <rect x="50" y="60" width="260" height="40" rx="8" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></rect>
+                <text x="60" y="84" font-size="11" font-weight="700" fill="{{ selectedLesson.iconColor }}">{ block scope — let/const, TDZ until here }</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagJsClosures }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="10" width="340" height="110" rx="10" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.4"></rect>
+                <text x="22" y="28" font-size="11" fill="oklch(0.45 0.006 255)">outer() — creates let count = 0</text>
+                <circle cx="55" cy="72" r="18" fill="{{ selectedLesson.iconColor }}" opacity="0.18" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></circle>
+                <text x="42" y="76" font-size="10">count</text>
+                <rect x="120" y="45" width="200" height="55" rx="8" fill="{{ selectedLesson.iconColor }}" opacity="0.1" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></rect>
+                <text x="132" y="65" font-size="11" font-weight="700" fill="{{ selectedLesson.iconColor }}">inner() — the returned function</text>
+                <text x="132" y="82" font-size="10" fill="oklch(0.4 0.006 255)">still reads/writes count after outer() returns</text>
+                <line x1="120" y1="72" x2="73" y2="72" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagJsThis }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <circle cx="40" cy="65" r="8" fill="{{ selectedLesson.iconColor }}"></circle>
+                <text x="14" y="95" font-size="10" fill="oklch(0.45 0.006 255)">call-site</text>
+                <line x1="48" y1="60" x2="140" y2="25" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <line x1="48" y1="65" x2="140" y2="65" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <line x1="48" y1="70" x2="140" y2="105" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <rect x="140" y="10" width="205" height="28" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.1" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="150" y="28" font-size="10.5">obj.fn() → this = obj</text>
+                <rect x="140" y="50" width="205" height="28" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.1" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="150" y="68" font-size="10.5">fn() plain call → this = undefined</text>
+                <rect x="140" y="90" width="205" height="28" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.1" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="150" y="108" font-size="10.5">arrow fn → this = lexical (from definition)</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagJsCoercion }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="20" y="20" width="90" height="30" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="30" y="39" font-size="10.5">[] (object)</text>
+                <rect x="20" y="80" width="90" height="30" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="30" y="99" font-size="10.5">false (boolean)</text>
+                <line x1="110" y1="35" x2="180" y2="58" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <line x1="110" y1="95" x2="180" y2="72" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></line>
+                <text x="118" y="55" font-size="9.5" fill="oklch(0.5 0.006 255)">== coerces both toward number</text>
+                <rect x="185" y="50" width="150" height="30" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.18" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></rect>
+                <text x="198" y="69" font-size="11" font-weight="700">both become 0 → true</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagJsAsync }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="15" width="105" height="95" rx="6" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="18" y="30" font-size="10" font-weight="700">1. Call stack</text>
+                <text x="18" y="46" font-size="9.5" fill="oklch(0.5 0.006 255)">sync code runs</text>
+                <rect x="127" y="15" width="105" height="95" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.1" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="135" y="30" font-size="10" font-weight="700">2. Microtasks</text>
+                <text x="135" y="46" font-size="9.5" fill="oklch(0.5 0.006 255)">.then, queueMicrotask</text>
+                <circle cx="145" cy="65" r="5" fill="{{ selectedLesson.iconColor }}"></circle>
+                <circle cx="165" cy="65" r="5" fill="{{ selectedLesson.iconColor }}" opacity="0.6"></circle>
+                <rect x="244" y="15" width="106" height="95" rx="6" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.6"></rect>
+                <text x="252" y="30" font-size="10" font-weight="700">3. Macrotasks</text>
+                <text x="252" y="46" font-size="9.5" fill="oklch(0.5 0.006 255)">setTimeout, I/O</text>
+                <circle cx="262" cy="65" r="5" fill="{{ selectedLesson.iconColor }}" opacity="0.4"></circle>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagJsUtils }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <text x="10" y="22" font-size="10" font-weight="700">debounce</text>
+                <line x1="10" y1="45" x2="340" y2="45" stroke="oklch(0.85 0.006 255)" stroke-width="1.5"></line>
+                <line x1="40" y1="45" x2="40" y2="32" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.4"></line>
+                <line x1="55" y1="45" x2="55" y2="32" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.4"></line>
+                <line x1="130" y1="45" x2="130" y2="20" stroke="{{ selectedLesson.iconColor }}" stroke-width="3"></line>
+                <text x="140" y="28" font-size="9.5" fill="oklch(0.5 0.006 255)">only the settled call fires</text>
+                <text x="10" y="85" font-size="10" font-weight="700">throttle</text>
+                <line x1="10" y1="105" x2="340" y2="105" stroke="oklch(0.85 0.006 255)" stroke-width="1.5"></line>
+                <line x1="40" y1="105" x2="40" y2="85" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+                <line x1="90" y1="105" x2="90" y2="85" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+                <line x1="140" y1="105" x2="140" y2="85" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+                <text x="150" y="98" font-size="9.5" fill="oklch(0.5 0.006 255)">fires at a steady max rate</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagReactCore }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <text x="10" y="20" font-size="10" font-weight="700">Virtual DOM (new render)</text>
+                <circle cx="40" cy="50" r="8" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></circle>
+                <line x1="40" y1="58" x2="20" y2="80" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <line x1="40" y1="58" x2="60" y2="80" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="20" cy="87" r="7" fill="{{ selectedLesson.iconColor }}" opacity="0.7"></circle>
+                <circle cx="60" cy="87" r="7" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></circle>
+                <text x="90" y="52" font-size="9.5" fill="oklch(0.5 0.006 255)">reconciliation diffs</text>
+                <text x="90" y="66" font-size="9.5" fill="oklch(0.5 0.006 255)">the two trees...</text>
+                <text x="220" y="20" font-size="10" font-weight="700">Real DOM (committed)</text>
+                <circle cx="250" cy="50" r="8" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></circle>
+                <line x1="250" y1="58" x2="230" y2="80" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <line x1="250" y1="58" x2="270" y2="80" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="230" cy="87" r="7" fill="{{ selectedLesson.iconColor }}" opacity="0.7"></circle>
+                <circle cx="270" cy="87" r="7" fill="{{ selectedLesson.iconColor }}" opacity="0.7"></circle>
+                <text x="185" y="108" font-size="9" fill="oklch(0.5 0.006 255)">only the changed node gets touched</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagReactHooks }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <circle cx="40" cy="20" r="6" fill="{{ selectedLesson.iconColor }}"></circle>
+                <text x="55" y="24" font-size="10.5">Render — component function runs</text>
+                <line x1="40" y1="26" x2="40" y2="48" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="40" cy="55" r="6" fill="{{ selectedLesson.iconColor }}" opacity="0.8"></circle>
+                <text x="55" y="59" font-size="10.5">Effect runs — after the DOM commits</text>
+                <line x1="40" y1="61" x2="40" y2="83" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <circle cx="40" cy="90" r="6" fill="{{ selectedLesson.iconColor }}" opacity="0.6"></circle>
+                <text x="55" y="94" font-size="10.5">Cleanup — before the next effect run</text>
+                <line x1="40" y1="96" x2="40" y2="112" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" stroke-dasharray="3,3"></line>
+                <circle cx="40" cy="118" r="6" fill="{{ selectedLesson.iconColor }}" opacity="0.4"></circle>
+                <text x="55" y="122" font-size="10.5">Re-render, if deps changed — loop repeats</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagReactPerf }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <path d="M40 90 A50 50 0 0 1 140 90" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="9" opacity="0.2"></path>
+                <path d="M40 90 A50 50 0 0 1 100 41" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="9"></path>
+                <line x1="90" y1="90" x2="118" y2="53" stroke="oklch(0.3 0.006 255)" stroke-width="2.5"></line>
+                <circle cx="90" cy="90" r="4" fill="oklch(0.3 0.006 255)"></circle>
+                <text x="160" y="52" font-size="10.5" font-weight="700">Referential equality</text>
+                <text x="160" y="69" font-size="9.5" fill="oklch(0.5 0.006 255)">is what memo / useMemo / useCallback</text>
+                <text x="160" y="84" font-size="9.5" fill="oklch(0.5 0.006 255)">actually check — new object = new render</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagReactState }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="6" y="45" width="70" height="34" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="16" y="66" font-size="10">Action</text>
+                <line x1="76" y1="62" x2="100" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="100" y="45" width="70" height="34" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="108" y="66" font-size="10">Reducer</text>
+                <line x1="170" y1="62" x2="194" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="194" y="45" width="70" height="34" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="207" y="66" font-size="10">Store</text>
+                <line x1="264" y1="62" x2="288" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="288" y="45" width="66" height="34" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="294" y="60" font-size="9.5">Component</text>
+                <text x="294" y="72" font-size="9">(selector)</text>
+                <text x="10" y="105" font-size="9.5" fill="oklch(0.5 0.006 255)">a component only re-renders if its selected slice actually changed</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagReactRouting }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="10" y="45" width="90" height="36" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="24" y="67" font-size="10.5">/login</text>
+                <line x1="100" y1="63" x2="150" y2="63" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <text x="102" y="55" font-size="9" fill="oklch(0.5 0.006 255)">RequireAuth</text>
+                <rect x="150" y="45" width="120" height="36" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.2" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="164" y="67" font-size="10.5">/dashboard (protected)</text>
+                <rect x="150" y="95" width="120" height="30" rx="6" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5" opacity="0.5"></rect>
+                <text x="164" y="115" font-size="10">/loan-types (public)</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagWebBasics }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="20" y="10" width="300" height="110" fill="{{ selectedLesson.iconColor }}" opacity="0.06" stroke="{{ selectedLesson.iconColor }}" stroke-width="1" stroke-dasharray="4,3"></rect>
+                <text x="26" y="24" font-size="9" fill="oklch(0.5 0.006 255)">margin</text>
+                <rect x="45" y="30" width="250" height="70" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="51" y="44" font-size="9" fill="oklch(0.45 0.006 255)">border</text>
+                <rect x="65" y="45" width="210" height="40" fill="{{ selectedLesson.iconColor }}" opacity="0.2" stroke="{{ selectedLesson.iconColor }}" stroke-width="1"></rect>
+                <text x="71" y="58" font-size="9" fill="oklch(0.45 0.006 255)">padding</text>
+                <rect x="85" y="58" width="170" height="16" fill="{{ selectedLesson.iconColor }}" opacity="0.4"></rect>
+                <text x="92" y="70" font-size="9" fill="#fff">content</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagGit }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <circle cx="30" cy="65" r="6" fill="{{ selectedLesson.iconColor }}"></circle>
+                <line x1="36" y1="65" x2="70" y2="65" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+                <circle cx="76" cy="65" r="6" fill="{{ selectedLesson.iconColor }}"></circle>
+                <line x1="82" y1="65" x2="110" y2="30" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+                <line x1="82" y1="65" x2="110" y2="100" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.5"></line>
+                <circle cx="116" cy="30" r="6" fill="{{ selectedLesson.iconColor }}"></circle>
+                <line x1="122" y1="30" x2="160" y2="30" stroke="{{ selectedLesson.iconColor }}" stroke-width="2"></line>
+                <circle cx="166" cy="30" r="6" fill="{{ selectedLesson.iconColor }}"></circle>
+                <text x="176" y="34" font-size="9.5">main</text>
+                <circle cx="116" cy="100" r="6" fill="{{ selectedLesson.iconColor }}" opacity="0.6"></circle>
+                <line x1="122" y1="100" x2="160" y2="100" stroke="{{ selectedLesson.iconColor }}" stroke-width="2" opacity="0.5"></line>
+                <circle cx="166" cy="100" r="6" fill="{{ selectedLesson.iconColor }}" opacity="0.6"></circle>
+                <text x="176" y="104" font-size="9.5" fill="oklch(0.5 0.006 255)">feature branch</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagMachineCoding }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="20" y="10" width="320" height="110" rx="8" fill="none" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <rect x="20" y="10" width="320" height="24" rx="8" fill="{{ selectedLesson.iconColor }}" opacity="0.25"></rect>
+                <circle cx="34" cy="22" r="4" fill="{{ selectedLesson.iconColor }}"></circle>
+                <rect x="36" y="48" width="90" height="60" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2"></rect>
+                <rect x="135" y="48" width="90" height="60" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2"></rect>
+                <rect x="234" y="48" width="90" height="60" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2"></rect>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagScenario }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="6" y="45" width="60" height="34" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="14" y="66" font-size="9.5">Login</text>
+                <line x1="66" y1="62" x2="95" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></line>
+                <rect x="95" y="10" width="90" height="26" rx="5" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2"></rect>
+                <text x="103" y="27" font-size="9">User details</text>
+                <rect x="95" y="49" width="90" height="26" rx="5" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2"></rect>
+                <text x="103" y="66" font-size="9">Loan details</text>
+                <rect x="95" y="88" width="90" height="26" rx="5" fill="{{ selectedLesson.iconColor }}" opacity="0.12" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2"></rect>
+                <text x="103" y="105" font-size="9">Next repayment</text>
+                <line x1="185" y1="23" x2="230" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2" opacity="0.5"></line>
+                <line x1="185" y1="62" x2="230" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2" opacity="0.5"></line>
+                <line x1="185" y1="101" x2="230" y2="62" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.2" opacity="0.5"></line>
+                <rect x="230" y="42" width="110" height="40" rx="6" fill="{{ selectedLesson.iconColor }}" opacity="0.22" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <text x="242" y="66" font-size="10" font-weight="700">Dashboard</text>
+              </svg>
+              </sc-if>
+              <sc-if value="{{ diagManagerial }}" hint-placeholder-val="{{ false }}">
+              <svg viewBox="0 0 360 130" style="width:100%;max-width:420px;height:130px;display:block;margin:0 auto">
+                <rect x="15" y="15" width="150" height="45" rx="10" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <path d="M35 60 L25 78 L50 60 Z" fill="{{ selectedLesson.iconColor }}" opacity="0.15" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></path>
+                <text x="26" y="35" font-size="9.5">"Tell me about yourself"</text>
+                <text x="26" y="49" font-size="9" fill="oklch(0.5 0.006 255)">interviewer</text>
+                <rect x="195" y="65" width="150" height="45" rx="10" fill="{{ selectedLesson.iconColor }}" opacity="0.25" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></rect>
+                <path d="M320 65 L332 48 L310 65 Z" fill="{{ selectedLesson.iconColor }}" opacity="0.25" stroke="{{ selectedLesson.iconColor }}" stroke-width="1.5"></path>
+                <text x="206" y="85" font-size="9.5" font-weight="700">role → decision → tradeoff</text>
+                <text x="206" y="99" font-size="9" fill="oklch(0.5 0.006 255)">your 90-second answer</text>
+              </svg>
+              </sc-if>
+            </div>
+            <sc-for list="{{ selectedLesson.detailSections }}" as="section" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:14px;font-weight:700;color:oklch(0.25 0.006 255)">{{ section.heading }}</div>
+                <sc-for list="{{ section.body }}" as="p" hint-placeholder-count="2">
+                  <div style="font-size:14px;line-height:1.7;color:oklch(0.3 0.006 255)">{{ p }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="background:oklch(0.985 0.006 255);border:1px solid oklch(0.92 0.006 255);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ selectedLesson.bullets }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.55;color:oklch(0.35 0.006 255)">
+                  <span style="width:6px;height:6px;border-radius:50%;background:{{ selectedLesson.iconColor }};margin-top:7px;flex:none"></span>
+                  <span>{{ b }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;font-weight:700;color:oklch(0.45 0.006 255)">Reported interview questions, answered</div>
+              <sc-for list="{{ selectedLesson.askedList }}" as="a" hint-placeholder-count="4">
+                <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                  <div style="font-size:14px;font-weight:600;line-height:1.5">{{ a.q }}</div>
+                  <div style="font-size:13px;line-height:1.6;color:oklch(0.4 0.006 255)">{{ a.a }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;font-weight:700;color:oklch(0.45 0.006 255)">Go deeper — the follow-ups that separate candidates</div>
+              <sc-for list="{{ selectedLesson.learnList }}" as="l" hint-placeholder-count="4">
+                <div style="background:oklch(0.97 0.006 255);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                  <div style="font-size:13.5px;font-weight:600;line-height:1.5;color:oklch(0.2 0.006 255)">{{ l.q }}</div>
+                  <div style="font-size:13px;line-height:1.6;color:oklch(0.4 0.006 255)">{{ l.a }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onclick="{{ goFlashForTopic }}" class="iq-btn" style="background:oklch(0.5 0.14 145);color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">Quiz yourself in flashcards →</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ selectedLessonIsGuide }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="background:oklch(0.985 0.004 255);border:1px solid oklch(0.92 0.006 255);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:14px;font-weight:700">Summary</div>
+              <div style="font-size:13.5px;line-height:1.6;color:oklch(0.3 0.006 255)">{{ selectedLesson.summary }}</div>
+              <sc-for list="{{ selectedLesson.bullets }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.55;color:oklch(0.35 0.006 255)">
+                  <span style="width:6px;height:6px;border-radius:50%;background:oklch(0.62 0.13 80);margin-top:7px;flex:none"></span>
+                  <span>{{ b }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <sc-for list="{{ selectedLesson.detailSections }}" as="section" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:16px">
+                <div style="font-size:13px;font-weight:700;color:oklch(0.25 0.006 255)">{{ section.heading }}</div>
+                <sc-for list="{{ section.body }}" as="p" hint-placeholder-count="2">
+                  <div style="font-size:14px;line-height:1.7;color:oklch(0.3 0.006 255)">{{ p }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+              <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:12px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Checklist</div>
+                <sc-for list="{{ selectedLesson.checklist }}" as="item" hint-placeholder-count="3">
+                  <div style="font-size:13px;line-height:1.55;color:oklch(0.3 0.006 255)">- {{ item }}</div>
+                </sc-for>
+              </div>
+              <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px">
+                <div style="font-size:12px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Related topics</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ relatedTopicsView }}" as="topic" hint-placeholder-count="4">
+                    <button onclick="{{ topic.select }}" style="background:oklch(0.97 0.006 255);border:1px solid oklch(0.88 0.006 255);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;color:oklch(0.3 0.006 255);cursor:pointer;font-family:'Source Sans 3',sans-serif">{{ topic.name }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:12px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.04em">Source docs</div>
+              <sc-for list="{{ selectedLesson.sourceDocs }}" as="src" hint-placeholder-count="3">
+                <div style="background:oklch(0.985 0.004 255);border:1px solid oklch(0.92 0.006 255);border-radius:8px;padding:10px 12px;font-size:13px;color:oklch(0.35 0.006 255)">{{ src }}</div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isStore }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:22px;max-width:1000px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:18px;font-weight:700">Redeem Store</div>
+            <div style="font-size:12.5px;color:oklch(0.5 0.006 255)">Spend the tokens you've earned on real rewards.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;background:oklch(0.95 0.05 90);border-radius:20px;padding:8px 16px">
+            <span style="font-size:18px;font-weight:700;color:oklch(0.4 0.1 90)">{{ tokens }}</span>
+            <span style="font-size:12.5px;color:oklch(0.48 0.08 90)">tokens</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ storeCategories }}" as="c" hint-placeholder-count="3">
+            <button onclick="{{ c.select }}" style="background:{{ c.bg }};color:{{ c.color }};border:1px solid {{ c.border }};border-radius:20px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif">{{ c.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:{{ storeGridCols }};gap:16px">
+          <sc-for list="{{ storeItemsView }}" as="r" hint-placeholder-count="6">
+            <div style="background:#fff;border:1px solid oklch(0.9 0.006 255);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="width:100%;aspect-ratio:4/3;display:block;background:{{ r.iconBg }}">
+                <sc-if value="{{ r.isCandybar }}" hint-placeholder-val="{{ true }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <rect x="16" y="20" width="48" height="20" rx="4" fill="{{ r.iconColor }}" opacity="0.85"></rect>
+                  <path d="M16 20 L8 15 L8 45 L16 40 Z" fill="{{ r.iconColor }}"></path>
+                  <path d="M64 20 L72 15 L72 45 L64 40 Z" fill="{{ r.iconColor }}"></path>
+                  <line x1="22" y1="22" x2="58" y2="38" stroke="#fff" stroke-width="2" opacity="0.5"></line>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isFries }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <path d="M28 55 L52 55 L48 28 L32 28 Z" fill="{{ r.iconColor }}" opacity="0.25" stroke="{{ r.iconColor }}" stroke-width="2"></path>
+                  <line x1="33" y1="28" x2="30" y2="10" stroke="{{ r.iconColor }}" stroke-width="4" stroke-linecap="round"></line>
+                  <line x1="38" y1="28" x2="37" y2="6" stroke="{{ r.iconColor }}" stroke-width="4" stroke-linecap="round"></line>
+                  <line x1="43" y1="28" x2="44" y2="8" stroke="{{ r.iconColor }}" stroke-width="4" stroke-linecap="round"></line>
+                  <line x1="48" y1="28" x2="50" y2="12" stroke="{{ r.iconColor }}" stroke-width="4" stroke-linecap="round"></line>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isBubbletea }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <path d="M28 20 L52 20 L48 52 L32 52 Z" fill="{{ r.iconColor }}" opacity="0.2" stroke="{{ r.iconColor }}" stroke-width="2"></path>
+                  <ellipse cx="40" cy="20" rx="12" ry="4" fill="{{ r.iconColor }}" opacity="0.5"></ellipse>
+                  <line x1="44" y1="8" x2="40" y2="20" stroke="{{ r.iconColor }}" stroke-width="3"></line>
+                  <circle cx="35" cy="46" r="2.5" fill="{{ r.iconColor }}"></circle>
+                  <circle cx="42" cy="47" r="2.5" fill="{{ r.iconColor }}"></circle>
+                  <circle cx="38" cy="41" r="2.5" fill="{{ r.iconColor }}"></circle>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isPizza }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <path d="M40 12 L62 50 L18 50 Z" fill="{{ r.iconColor }}" opacity="0.25" stroke="{{ r.iconColor }}" stroke-width="2"></path>
+                  <path d="M18 50 A22 22 0 0 1 62 50" fill="none" stroke="{{ r.iconColor }}" stroke-width="3"></path>
+                  <circle cx="36" cy="34" r="3" fill="{{ r.iconColor }}"></circle>
+                  <circle cx="45" cy="41" r="3" fill="{{ r.iconColor }}"></circle>
+                  <circle cx="40" cy="26" r="3" fill="{{ r.iconColor }}"></circle>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isDinner }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <circle cx="40" cy="30" r="18" fill="{{ r.iconColor }}" opacity="0.18" stroke="{{ r.iconColor }}" stroke-width="2"></circle>
+                  <circle cx="40" cy="30" r="9" fill="none" stroke="{{ r.iconColor }}" stroke-width="1.5" opacity="0.6"></circle>
+                  <line x1="14" y1="14" x2="14" y2="46" stroke="{{ r.iconColor }}" stroke-width="2.5" stroke-linecap="round"></line>
+                  <line x1="10" y1="14" x2="10" y2="24" stroke="{{ r.iconColor }}" stroke-width="2" stroke-linecap="round"></line>
+                  <line x1="18" y1="14" x2="18" y2="24" stroke="{{ r.iconColor }}" stroke-width="2" stroke-linecap="round"></line>
+                  <path d="M66 14 C60 20 60 26 66 30 L66 46" fill="none" stroke="{{ r.iconColor }}" stroke-width="2.5" stroke-linecap="round"></path>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isCoffee }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <path d="M22 24 L54 24 L51 48 L25 48 Z" fill="{{ r.iconColor }}" opacity="0.22" stroke="{{ r.iconColor }}" stroke-width="2"></path>
+                  <path d="M54 27 C64 27 64 41 54 41" fill="none" stroke="{{ r.iconColor }}" stroke-width="2.5"></path>
+                  <path d="M30 16 C30 12 34 12 33 8" fill="none" stroke="{{ r.iconColor }}" stroke-width="2" stroke-linecap="round" opacity="0.7"></path>
+                  <path d="M40 16 C40 12 44 12 43 8" fill="none" stroke="{{ r.iconColor }}" stroke-width="2" stroke-linecap="round" opacity="0.7"></path>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isRoadtrip }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <rect x="14" y="30" width="40" height="14" rx="6" fill="{{ r.iconColor }}" opacity="0.85"></rect>
+                  <rect x="24" y="20" width="22" height="12" rx="4" fill="{{ r.iconColor }}" opacity="0.6"></rect>
+                  <circle cx="24" cy="46" r="5" fill="{{ r.iconColor }}"></circle>
+                  <circle cx="48" cy="46" r="5" fill="{{ r.iconColor }}"></circle>
+                  <line x1="58" y1="44" x2="70" y2="44" stroke="{{ r.iconColor }}" stroke-width="2" opacity="0.5"></line>
+                  <line x1="58" y1="36" x2="66" y2="36" stroke="{{ r.iconColor }}" stroke-width="2" opacity="0.35"></line>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isTent }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <path d="M40 14 L62 48 L18 48 Z" fill="{{ r.iconColor }}" opacity="0.22" stroke="{{ r.iconColor }}" stroke-width="2"></path>
+                  <path d="M40 14 L48 48" stroke="{{ r.iconColor }}" stroke-width="2"></path>
+                  <path d="M40 30 L36 48 L44 48 Z" fill="#fff" opacity="0.6"></path>
+                  <line x1="10" y1="48" x2="70" y2="48" stroke="{{ r.iconColor }}" stroke-width="2"></line>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isPlane }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <path d="M10 34 L66 30 L72 34 L66 38 L10 36 Z" fill="{{ r.iconColor }}"></path>
+                  <path d="M34 30 L44 12 L50 12 L44 30 Z" fill="{{ r.iconColor }}" opacity="0.7"></path>
+                  <path d="M34 36 L44 52 L50 52 L44 36 Z" fill="{{ r.iconColor }}" opacity="0.7"></path>
+                </svg>
+                </sc-if>
+                <sc-if value="{{ r.isGlobe }}" hint-placeholder-val="{{ false }}">
+                <svg viewBox="0 0 80 60" style="width:100%;height:100%;display:block">
+                  <circle cx="34" cy="30" r="18" fill="{{ r.iconColor }}" opacity="0.15" stroke="{{ r.iconColor }}" stroke-width="2"></circle>
+                  <ellipse cx="34" cy="30" rx="7" ry="18" fill="none" stroke="{{ r.iconColor }}" stroke-width="1.3" opacity="0.6"></ellipse>
+                  <line x1="16" y1="30" x2="52" y2="30" stroke="{{ r.iconColor }}" stroke-width="1.3" opacity="0.6"></line>
+                  <path d="M40 20 C56 22 62 32 68 40" fill="none" stroke="{{ r.iconColor }}" stroke-width="1.5" stroke-dasharray="2,3"></path>
+                  <circle cx="68" cy="40" r="2.5" fill="{{ r.iconColor }}"></circle>
+                </svg>
+                </sc-if>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px">
+                <div style="font-size:10.5px;font-weight:700;color:oklch(0.5 0.006 255);text-transform:uppercase;letter-spacing:.05em">{{ r.categoryLabel }}</div>
+                <div style="font-size:14.5px;font-weight:600;line-height:1.35">{{ r.name }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px">
+                  <span style="font-size:15px;font-weight:700">{{ r.cost }} <span style="font-size:11px;font-weight:600;color:oklch(0.55 0.006 255)">tokens</span></span>
+                  <button onclick="{{ r.redeem }}" disabled="{{ r.disabled }}" style="background:{{ r.btnBg }};color:{{ r.btnColor }};border:none;border-radius:7px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:{{ r.cursor }};font-family:'Source Sans 3',sans-serif">{{ r.btnLabel }}</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ hasRedeemed }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:14px;font-weight:700">Redeemed</div>
+          <sc-for list="{{ redeemedView }}" as="h" hint-placeholder-count="2">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:oklch(0.4 0.006 255);padding:8px 0;border-bottom:1px solid oklch(0.93 0.006 255)">
+              <span>{{ h.name }}</span><span style="color:oklch(0.55 0.006 255)">{{ h.dateLabel }} · -{{ h.cost }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ showMobileNav }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid oklch(0.9 0.006 255);display:flex;justify-content:space-around;padding:8px 4px calc(env(safe-area-inset-bottom) + 6px);z-index:10;overflow-x:auto">
+    <sc-for list="{{ navItems }}" as="nav" hint-placeholder-count="7">
+      <button onclick="{{ nav.select }}" style="background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 6px;font-family:'Source Sans 3',sans-serif;cursor:pointer;flex:none">
+        <span style="width:7px;height:7px;border-radius:50%;background:{{ nav.dotColor }}"></span>
+        <span style="font-size:10px;font-weight:{{ nav.weight }};color:{{ nav.color }}">{{ nav.shortLabel }}</span>
+      </button>
+    </sc-for>
+  </div>
+  </sc-if>
+
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    dataLoaded: false, currentUser: null, users: {}, loginNameInput: "",
+    isMobile: (typeof window !== "undefined" && window.innerWidth < 800),
+    view: "home",
+    selectedCodeId: null, showRevealCode: false, codeDraft: "", consoleTab: "testcase",
+    selectedChainId: null, followUpIndex: 0, showChainAnswer: false,
+    flashIndex: 0, cardFlipped: false,
+    selectedLessonId: "topic:js-scope",
+    selectedModuleTopicId: "js-scope", moduleTab: "lesson",
+    dayTestQuestions: [], dayTestAnswers: {}, dayTestSubmitted: false, dayTestScore: 0,
+    runResult: null, running: false, celebrate: false
+  };
+
+  async componentDidMount() {
+    const [mod, engine] = await Promise.all([import("./content-data.js"), import("./exec-engine.js")]);
+    this.data = mod;
+    this.engine = engine;
+    const users = JSON.parse(localStorage.getItem("iq_users_v2") || "{}");
+    const lastUser = localStorage.getItem("iq_last_user_v2");
+    this.setState({ users, dataLoaded: true, currentUser: (lastUser && users[lastUser]) ? lastUser : null });
+    this._onResize = () => this.setState({ isMobile: window.innerWidth < 800 });
+    window.addEventListener("resize", this._onResize);
+  }
+  componentWillUnmount() { if (this._onResize) window.removeEventListener("resize", this._onResize); }
+
+  saveUsers(users) { localStorage.setItem("iq_users_v2", JSON.stringify(users)); }
+  newUser() { return { tokens: 0, completedCode: [], completedInterview: [], knownFlashcards: [], passedDayTests: [], tokensAwardedDays: [], redeemed: [], streak: 0, lastActiveDate: null }; }
+  todayStr() { return new Date().toISOString().slice(0, 10); }
+  bumpStreak(u) {
+    const today = this.todayStr();
+    if (u.lastActiveDate === today) return u;
+    const yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    u.streak = (u.lastActiveDate === yest) ? (u.streak || 0) + 1 : 1;
+    u.lastActiveDate = today;
+    return u;
+  }
+  login(name) {
+    const users = { ...this.state.users };
+    if (!users[name]) users[name] = this.newUser();
+    users[name] = this.bumpStreak({ ...this.newUser(), ...users[name] });
+    this.saveUsers(users);
+    localStorage.setItem("iq_last_user_v2", name);
+    this.setState({ users, currentUser: name, loginNameInput: "" });
+  }
+
+  isDayComplete(topicId, u) {
+    const { CODE_QUESTIONS, INTERVIEW_CHAINS, FLASHCARDS } = this.data;
+    const codeIds = CODE_QUESTIONS.filter(q => q.topic === topicId).map(q => q.id);
+    const chainIds = INTERVIEW_CHAINS.filter(c => c.topic === topicId).map(c => c.id);
+    const cardIds = FLASHCARDS.filter(f => f.topic === topicId).map(f => f.id);
+    return codeIds.every(id => u.completedCode.includes(id))
+      && chainIds.every(id => u.completedInterview.includes(id))
+      && cardIds.every(id => u.knownFlashcards.includes(id))
+      && (u.passedDayTests || []).includes(topicId);
+  }
+  applyDayCompletion(u, topicId) {
+    if ((u.tokensAwardedDays || []).includes(topicId) || !this.isDayComplete(topicId, u)) return { u, celebrate: false };
+    return {
+      u: { ...u, tokens: (u.tokens || 0) + this.data.MODULE_TOKENS, tokensAwardedDays: [...(u.tokensAwardedDays || []), topicId] },
+      celebrate: true
+    };
+  }
+  commitUser(u, celebrate) {
+    const users = { ...this.state.users, [this.state.currentUser]: u };
+    this.saveUsers(users);
+    this.setState({ users, ...(celebrate ? { celebrate: true } : {}) });
+    if (celebrate) setTimeout(() => this.setState({ celebrate: false }), 1500);
+  }
+  award(kind, id, topicId) {
+    let u = { ...this.state.users[this.state.currentUser] };
+    const key = { code: "completedCode", interview: "completedInterview", flash: "knownFlashcards" }[kind];
+    if (!u[key].includes(id)) u = { ...u, [key]: [...u[key], id] };
+    const { u: u2, celebrate } = this.applyDayCompletion(u, topicId);
+    this.commitUser(u2, celebrate);
+  }
+  buildDayTest(topicId) {
+    const { FLASHCARDS } = this.data;
+    const shuffle = (arr) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const topicCards = FLASHCARDS.filter(f => f.topic === topicId);
+    const otherCards = FLASHCARDS.filter(f => f.topic !== topicId);
+    return shuffle(topicCards).slice(0, 5).map(card => {
+      const distractors = shuffle(otherCards).slice(0, 3).map(c => c.back);
+      const options = shuffle([card.back, ...distractors]);
+      return { q: card.front, options, correctIndex: options.indexOf(card.back) };
+    });
+  }
+  submitDayTest() {
+    const topicId = this.state.selectedModuleTopicId;
+    const qs = this.state.dayTestQuestions;
+    const answers = this.state.dayTestAnswers;
+    const score = qs.filter((q, i) => answers[i] === q.correctIndex).length;
+    const passed = score >= Math.ceil(qs.length * 0.8);
+    this.setState({ dayTestSubmitted: true, dayTestScore: score });
+    if (!passed) return;
+    let u = { ...this.state.users[this.state.currentUser] };
+    if (!(u.passedDayTests || []).includes(topicId)) u = { ...u, passedDayTests: [...(u.passedDayTests || []), topicId] };
+    const { u: u2, celebrate } = this.applyDayCompletion(u, topicId);
+    this.commitUser(u2, celebrate);
+  }
+
+  saveProgressToFile() {
+    const blob = new Blob([JSON.stringify(this.state.users, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "interviewquest-progress.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  loadProgressFromFile(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const loaded = JSON.parse(reader.result);
+        if (loaded && typeof loaded === "object") {
+          const users = { ...this.state.users, ...loaded };
+          this.saveUsers(users);
+          this.setState({ users });
+        }
+      } catch {}
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
+  clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+  renderVals() {
+    if (!this.state.dataLoaded) return {};
+    const { TOPICS, TOPIC_ARTICLES, KNOWLEDGE_GUIDES, CODE_QUESTIONS, INTERVIEW_CHAINS, FLASHCARDS, REWARDS, ICONS, MODULE_TOKENS } = this.data;
+    const iconFor = (topicId) => ICONS[topicId] || { color: "oklch(0.55 0.006 255)", mono: "?" };
+    const isLoggedIn = !!this.state.currentUser;
+    const usersKeys = Object.keys(this.state.users).filter(n => n !== this.state.currentUser);
+    const otherUsers = usersKeys.map(n => ({ name: n, select: () => this.login(n) }));
+
+    if (!isLoggedIn) {
+      return {
+        isLoggedIn: false, isLoggedOut: true,
+        loginNameInput: this.state.loginNameInput,
+        onLoginInputChange: (e) => this.setState({ loginNameInput: e.target.value }),
+        handleLogin: () => { if (this.state.loginNameInput.trim()) this.login(this.state.loginNameInput.trim()); },
+        hasOtherUsers: otherUsers.length > 0, otherUsers
+      };
+    }
+
+    const u = { ...this.newUser(), ...this.state.users[this.state.currentUser] };
+    const isMobile = this.state.isMobile;
+
+    const viewMeta = {
+      home: { title: "Home" }, roadmap: { title: "Roadmap" }, practice: { title: "Coding Practice" },
+      interview: { title: "Interview Mode" }, flashcards: { title: "Flashcards" }, lessons: { title: "Lessons" }, store: { title: "Redeem Store" }
+    };
+    const navDefs = [
+      { id: "home", label: "Home", color: "oklch(0.55 0.16 255)" },
+      { id: "roadmap", label: "Roadmap", color: "oklch(0.55 0.1 145)" },
+      { id: "practice", label: "Coding Practice", color: "oklch(0.55 0.16 255)" },
+      { id: "interview", label: "Interview Mode", color: "oklch(0.58 0.14 300)" },
+      { id: "flashcards", label: "Flashcards", color: "oklch(0.5 0.14 145)" },
+      { id: "lessons", label: "Lessons", color: "oklch(0.5 0.006 255)" },
+      { id: "store", label: "Redeem Store", color: "oklch(0.55 0.12 90)" }
+    ];
+    const navItems = navDefs.map(n => ({
+      label: n.label, shortLabel: n.label.split(" ")[0],
+      select: () => this.setState({ view: n.id }),
+      bg: this.state.view === n.id ? "oklch(0.94 0.02 255)" : "transparent",
+      weight: this.state.view === n.id ? 700 : 500,
+      color: this.state.view === n.id ? "oklch(0.2 0.006 255)" : "oklch(0.4 0.006 255)",
+      dotColor: n.color
+    }));
+
+    const daysComplete = TOPICS.filter(t => this.isDayComplete(t.id, u)).length;
+    const progressPct = Math.round((daysComplete / TOPICS.length) * 100);
+
+    // plant growth, driven by days-complete fraction (0..4 scale)
+    const growth = 4 * daysComplete / TOPICS.length;
+    const plantStemTopY = 150 - (10 + growth * 25);
+    const plantLeaf1Y = 150 - (10 + growth * 25) * 0.4;
+    const plantLeaf2Y = 150 - (10 + growth * 25) * 0.72;
+    const plantLeaf1Op = this.clamp01(growth - 0.3);
+    const plantLeaf2Op = this.clamp01(growth - 1.2);
+    const plantBudOp = this.clamp01((growth - 2.4) * 1.5) * (1 - this.clamp01(growth - 3.3));
+    const plantFlowerOp = this.clamp01((growth - 3.3) * 1.8);
+    const plantFlowerScale = 0.5 + 0.5 * plantFlowerOp;
+    const plantFlowerColor = "oklch(0.6 0.14 145)";
+    const plantHint = daysComplete === 0 ? "Just sprouted — finish Day 1 to help it grow." : daysComplete < 8 ? "Leaves are coming in. Keep going." : daysComplete < 16 ? "Budding! A few more days to full bloom." : "In full bloom — all 16 days complete.";
+    const milestones = [4, 8, 12, 16];
+    const flowerBadges = milestones.map(m => {
+      const unlocked = daysComplete >= m;
+      return { name: `Day ${m}`, fill: unlocked ? "oklch(0.6 0.14 145)" : "oklch(0.9 0.006 255)", op: unlocked ? 1 : 0.55, centerFill: unlocked ? "oklch(0.97 0.05 90)" : "oklch(0.95 0.006 255)", labelColor: unlocked ? "oklch(0.5 0.14 145)" : "oklch(0.65 0.006 255)" };
+    });
+
+    const topicsView = TOPICS.map((t) => {
+      const article = TOPIC_ARTICLES[t.id] || {};
+      const icon = iconFor(t.id);
+      return {
+        id: t.id, name: t.name, part: t.part,
+        askedList: t.asked, learnList: t.learn,
+        summary: article.summary || "", bullets: article.bullets || [],
+        detailSections: article.articleSections || [], sourceDocs: article.sources || [],
+        iconColor: icon.color, iconMono: icon.mono,
+        complete: this.isDayComplete(t.id, u)
+      };
+    });
+
+    const topicName = (id) => (TOPICS.find(t => t.id === id) || {}).name || id;
+
+    const MODE_LABEL = { predict: "Predict output", implement: "Implement", component: "Component", design: "Design" };
+    const MODE_BADGE = { predict: "oklch(0.55 0.14 250)", implement: "oklch(0.5 0.14 145)", component: "oklch(0.56 0.14 300)", design: "oklch(0.55 0.1 90)" };
+    const MODE_EXAMPLE_LABEL = { predict: "Snippet", implement: "Starter code", component: "Starter code (JSX)", design: "Prompt" };
+    const MODE_HINT = {
+      predict: "This snippet runs for real. Hit Run to execute it and compare the captured output against the known-correct sequence.",
+      implement: "Fill in the function. Run checks a sample case; Submit grades it against the full hidden test suite.",
+      component: "Fill in the component/hook. It's compiled with Babel and mounted for real; Run/Submit check its actual rendered behaviour.",
+      design: "There's no single correct output here — hit Submit to check your answer against the reference solution."
+    };
+    const resetRunState = { showRevealCode: false, consoleTab: "testcase", runResult: null, celebrate: false };
+
+    const codeQuestionsView = CODE_QUESTIONS.map(q => ({ ...q, topicName: topicName(q.topic), done: u.completedCode.includes(q.id), iconColor: iconFor(q.topic).color, iconMono: iconFor(q.topic).mono, select: () => this.setState({ selectedCodeId: q.id, codeDraft: q.code, ...resetRunState }) }));
+
+    let selectedCode = null;
+    if (this.state.selectedCodeId) {
+      const q = CODE_QUESTIONS.find(c => c.id === this.state.selectedCodeId);
+      const isDesign = q.mode === "design";
+      selectedCode = {
+        ...q, topicName: topicName(q.topic), done: u.completedCode.includes(q.id),
+        filename: q.mode === "component" ? "solution.jsx" : "solution.js",
+        modeLabel: MODE_LABEL[q.mode], modeBadgeColor: MODE_BADGE[q.mode],
+        exampleLabel: MODE_EXAMPLE_LABEL[q.mode], outputHint: MODE_HINT[q.mode],
+        idleHint: isDesign ? "Hit Submit to check your answer against the reference solution." : "Hit Run to test your code, or Submit to grade it against the full test suite.",
+        acceptedLabel: isDesign ? "Reviewed" : "Accepted",
+        testcaseShowsCode: q.mode === "predict" || isDesign,
+        testcaseShowsTests: q.mode === "implement" || q.mode === "component",
+        testCount: (q.tests || []).length,
+        testNamesView: (q.tests || []).map((t, i) => ({ n: i + 1, name: t.name }))
+      };
+    }
+
+    const fmtVal = (v) => { if (v === undefined) return "undefined"; try { return typeof v === "string" ? v : JSON.stringify(v); } catch { return String(v); } };
+    const passColor = "oklch(0.72 0.15 145)", failColor = "oklch(0.72 0.16 25)";
+    const passBg = "oklch(0.28 0.06 145)", failBg = "oklch(0.28 0.08 25)";
+    const rr = this.state.runResult;
+    const runView = {
+      running: this.state.running,
+      hasCompileError: !!(rr && rr.compileError), compileErrorMsg: (rr && rr.compileError) ? rr.compileError.message : "",
+      hasPredictRows: false, predictRows: [],
+      errorRowBg: failBg, errorRowColor: failColor, errorRowIcon: "✕", actualErrorLabel: "", expectedErrorLabel: "",
+      hasTestRows: false, testRows: [],
+      hasConsole: false, consoleLines: [],
+      showIdleHint: !this.state.running && !rr
+    };
+    if (rr && !rr.compileError) {
+      runView.hasConsole = (rr.consoleOutput || []).length > 0;
+      runView.consoleLines = (rr.consoleOutput || []).map(l => `[${l.level}] ${l.text}`);
+      if (rr.predicted) {
+        const p = rr.predicted;
+        const maxLen = Math.max(p.actualLogs.length, p.expectedLogs.length);
+        for (let i = 0; i < maxLen; i++) {
+          const exp = p.expectedLogs[i], act = p.actualLogs[i];
+          const ok = exp === act;
+          runView.predictRows.push({ n: i + 1, actual: act === undefined ? "(nothing)" : act, expected: exp === undefined ? "(nothing)" : exp, showExpected: !ok, icon: ok ? "✓" : "✕", color: ok ? passColor : failColor, bg: ok ? passBg : failBg });
+        }
+        runView.hasPredictRows = true;
+        const errOk = p.actualError === p.expectedError;
+        runView.errorRowBg = errOk ? passBg : failBg; runView.errorRowColor = errOk ? passColor : failColor; runView.errorRowIcon = errOk ? "✓" : "✕";
+        runView.actualErrorLabel = p.actualError || "(none)"; runView.expectedErrorLabel = p.expectedError || "(none)";
+      }
+      if (rr.results && rr.results.length) {
+        runView.hasTestRows = true;
+        runView.testRows = rr.results.map((t, i) => {
+          const hasError = !!t.error;
+          return { n: i + 1, name: t.name, icon: t.pass ? "✓" : "✕", color: t.pass ? passColor : failColor, bg: t.pass ? passBg : failBg, hasDetail: !t.pass && !hasError, hasError, expectedText: fmtVal(t.expected), actualText: fmtVal(t.actual), errorText: t.error || "" };
+        });
+      }
+    }
+    const runViewFields = Object.fromEntries(Object.entries(runView).map(([k, v]) => ["runView" + k[0].toUpperCase() + k.slice(1), v]));
+    const confettiColors = ["oklch(0.6 0.16 25)", "oklch(0.65 0.14 90)", "oklch(0.55 0.16 255)", "oklch(0.6 0.14 145)", "oklch(0.58 0.14 300)"];
+    const confettiBits = Array.from({ length: 6 }, (_, i) => ({ color: confettiColors[i % confettiColors.length], delay: `${(i * 0.05).toFixed(2)}s` }));
+
+    const chainsView = INTERVIEW_CHAINS.map(c => {
+      const t = TOPICS.find(x => x.id === c.topic);
+      return { ...c, topicName: t.name, followupCount: t.learn.length, iconColor: iconFor(c.topic).color, iconMono: iconFor(c.topic).mono, done: u.completedInterview.includes(c.id), select: () => this.setState({ selectedChainId: c.id, followUpIndex: 0, showChainAnswer: false }) };
+    });
+
+    let selectedChain = null, followupPosition = "", hasMoreFollowups = false, isLastFollowup = false;
+    if (this.state.selectedChainId) {
+      const c = INTERVIEW_CHAINS.find(x => x.id === this.state.selectedChainId);
+      const t = TOPICS.find(x => x.id === c.topic);
+      const fi = this.state.followUpIndex;
+      selectedChain = { ...c, topicName: t.name, currentFollowup: t.learn[fi].q, done: u.completedInterview.includes(c.id), answer: c.answer };
+      followupPosition = `${fi + 1} / ${t.learn.length}`;
+      hasMoreFollowups = fi < t.learn.length - 1;
+      isLastFollowup = fi === t.learn.length - 1;
+    }
+
+    const flashDeck = FLASHCARDS;
+    const fi2 = Math.min(this.state.flashIndex, Math.max(0, flashDeck.length - 1));
+    const fc = flashDeck[fi2] || FLASHCARDS[0];
+    const currentCard = { ...fc, topicName: topicName(fc.topic), iconColor: iconFor(fc.topic).color, iconMono: iconFor(fc.topic).mono };
+    const flipCardClass = this.state.cardFlipped ? "iq-flip-inner is-flipped" : "iq-flip-inner";
+
+    const partsMap = {};
+    topicsView.forEach(t => { (partsMap[t.part] = partsMap[t.part] || []).push(t); });
+    const guideSectionsMap = {};
+    KNOWLEDGE_GUIDES.forEach(g => { (guideSectionsMap[g.section] = guideSectionsMap[g.section] || []).push(g); });
+    const topicLessons = topicsView.map(t => ({
+      ...t,
+      kind: "topic",
+      lessonId: `topic:${t.id}`,
+      heading: t.name,
+      meta: t.part
+    }));
+    const guideLessons = KNOWLEDGE_GUIDES.map(g => ({
+      ...g,
+      kind: "guide",
+      lessonId: `guide:${g.id}`,
+      heading: g.title,
+      meta: `${g.section} playbook`,
+      detailSections: g.playbook,
+      sourceDocs: g.sources
+    }));
+    const lessonsById = {};
+    [...topicLessons, ...guideLessons].forEach(item => { lessonsById[item.lessonId] = item; });
+    const selectLesson = (lessonId) => this.setState({ selectedLessonId: lessonId });
+    const lessonNavGroups = [
+      ...Object.keys(partsMap).map(name => ({
+        name,
+        items: partsMap[name].map(t => ({
+          label: t.name,
+          select: () => selectLesson(`topic:${t.id}`),
+          bg: this.state.selectedLessonId === `topic:${t.id}` ? "oklch(0.94 0.02 255)" : "transparent",
+          weight: this.state.selectedLessonId === `topic:${t.id}` ? 700 : 500,
+          iconColor: t.iconColor, iconMono: t.iconMono, complete: t.complete
+        }))
+      })),
+      ...Object.keys(guideSectionsMap).map(name => ({
+        name: `Wiki · ${name}`,
+        items: guideSectionsMap[name].map(g => ({
+          label: g.title,
+          select: () => selectLesson(`guide:${g.id}`),
+          bg: this.state.selectedLessonId === `guide:${g.id}` ? "oklch(0.95 0.03 90)" : "transparent",
+          weight: this.state.selectedLessonId === `guide:${g.id}` ? 700 : 500,
+          iconColor: "oklch(0.62 0.13 80)", iconMono: "Wk", complete: false
+        }))
+      }))
+    ];
+    const selectedLesson = lessonsById[this.state.selectedLessonId] || topicLessons[0];
+    const selectedLessonIsTopic = selectedLesson.kind === "topic";
+    const selectedLessonIsGuide = selectedLesson.kind === "guide";
+    const pascalCase = (id) => id.split("-").map(s => s[0].toUpperCase() + s.slice(1)).join("");
+    const diagFlags = {};
+    TOPICS.forEach(t => { diagFlags["diag" + pascalCase(t.id)] = selectedLessonIsTopic && selectedLesson.id === t.id; });
+    const relatedTopicsView = (selectedLesson.relatedTopics || []).map(id => {
+      const topic = topicsView.find(t => t.id === id);
+      return topic ? { name: topic.name, select: () => selectLesson(`topic:${topic.id}`) } : null;
+    }).filter(Boolean);
+
+    // module (day) view
+    const selModTopic = TOPICS.find(t => t.id === this.state.selectedModuleTopicId) || TOPICS[0];
+    const selModIndex = TOPICS.findIndex(t => t.id === selModTopic.id);
+    const modDiagFlags = {};
+    TOPICS.forEach(t => { modDiagFlags["modDiag" + pascalCase(t.id)] = selModTopic.id === t.id; });
+    const modLesson = topicsView.find(t => t.id === selModTopic.id);
+    const modCode = CODE_QUESTIONS.filter(q => q.topic === selModTopic.id).map(q => ({
+      id: q.id, title: q.title, done: u.completedCode.includes(q.id), notDone: !u.completedCode.includes(q.id),
+      go: () => this.setState({ view: "practice", selectedCodeId: q.id, codeDraft: q.code, ...resetRunState })
+    }));
+    const modChains = INTERVIEW_CHAINS.filter(c => c.topic === selModTopic.id).map(c => ({
+      id: c.id, main: c.main, done: u.completedInterview.includes(c.id), notDone: !u.completedInterview.includes(c.id),
+      go: () => this.setState({ view: "interview", selectedChainId: c.id, followUpIndex: 0, showChainAnswer: false })
+    }));
+    const modAllCards = FLASHCARDS.filter(f => f.topic === selModTopic.id);
+    const modCardsCount = modAllCards.length;
+    const modCardsDone = modAllCards.filter(f => u.knownFlashcards.includes(f.id)).length;
+    const goModuleFlashcards = () => {
+      const idx = FLASHCARDS.findIndex(f => f.topic === selModTopic.id);
+      this.setState({ view: "flashcards", flashIndex: Math.max(0, idx), cardFlipped: false });
+    };
+    const modComplete = this.isDayComplete(selModTopic.id, u);
+
+    const MOD_TABS = [
+      { id: "lesson", label: "Lesson" }, { id: "coding", label: "Coding Test" }, { id: "qa", label: "Q&A" },
+      { id: "flash", label: "Flashcards" }, { id: "test", label: "Test" }
+    ];
+    const modTabsView = MOD_TABS.map(mt => ({
+      label: mt.label,
+      select: () => {
+        if (mt.id === "test") this.setState({ moduleTab: "test", dayTestQuestions: this.buildDayTest(selModTopic.id), dayTestAnswers: {}, dayTestSubmitted: false });
+        else this.setState({ moduleTab: mt.id });
+      },
+      color: this.state.moduleTab === mt.id ? "oklch(0.2 0.006 255)" : "oklch(0.55 0.006 255)",
+      weight: this.state.moduleTab === mt.id ? 700 : 500,
+      border: this.state.moduleTab === mt.id ? "oklch(0.55 0.16 255)" : "transparent"
+    }));
+
+    const dayTestTotal = (this.state.dayTestQuestions || []).length;
+    const dayTestQs = (this.state.dayTestQuestions || []).map((q, i) => ({
+      n: i + 1, q: q.q,
+      options: q.options.map((opt, oi) => {
+        const submitted = this.state.dayTestSubmitted;
+        const picked = this.state.dayTestAnswers[i] === oi;
+        const correct = oi === q.correctIndex;
+        let bg = "#fff", border = "oklch(0.88 0.006 255)", icon = "";
+        if (submitted && correct) { bg = "oklch(0.94 0.06 145)"; border = "oklch(0.6 0.14 145)"; icon = "✓"; }
+        else if (submitted && picked && !correct) { bg = "oklch(0.95 0.06 25)"; border = "oklch(0.6 0.14 25)"; icon = "✕"; }
+        else if (!submitted && picked) { bg = "oklch(0.95 0.03 255)"; border = "oklch(0.55 0.16 255)"; }
+        return { text: opt, bg, border, icon, disabled: submitted, select: () => { if (submitted) return; const a = { ...this.state.dayTestAnswers }; a[i] = oi; this.setState({ dayTestAnswers: a }); } };
+      })
+    }));
+    const dayTestAnsweredCount = Object.keys(this.state.dayTestAnswers || {}).length;
+    const dayTestSubmitDisabled = dayTestTotal === 0 || dayTestAnsweredCount < dayTestTotal;
+    const dayTestPassMark = dayTestTotal ? `${Math.ceil(dayTestTotal * 0.8)}/${dayTestTotal}` : "";
+    const dayTestPassed = this.state.dayTestScore >= Math.ceil(dayTestTotal * 0.8);
+    const dayTestResultLabel = this.state.dayTestSubmitted ? (dayTestPassed ? `✓ Passed — ${this.state.dayTestScore}/${dayTestTotal}` : `${this.state.dayTestScore}/${dayTestTotal} — try again`) : "";
+    const dayTestResultColor = dayTestPassed ? "oklch(0.5 0.14 145)" : "oklch(0.6 0.16 25)";
+
+    const moduleDays = TOPICS.map((t, i) => {
+      const complete = this.isDayComplete(t.id, u);
+      const selected = this.state.selectedModuleTopicId === t.id;
+      return {
+        day: i + 1, id: t.id, name: t.name, title: `Day ${i + 1}: ${t.name}${complete ? " — complete" : ""}`,
+        select: () => this.setState({ selectedModuleTopicId: t.id, moduleTab: "lesson" }),
+        bg: complete ? "oklch(0.58 0.14 145)" : "#fff",
+        color: complete ? "#fff" : "oklch(0.3 0.006 255)",
+        border: selected ? "2px solid oklch(0.4 0.15 255)" : "1px solid oklch(0.9 0.006 255)"
+      };
+    });
+    const nextModuleTopic = TOPICS.find(t => !this.isDayComplete(t.id, u));
+    const nextModule = nextModuleTopic ? {
+      day: TOPICS.findIndex(t => t.id === nextModuleTopic.id) + 1, name: nextModuleTopic.name,
+      iconColor: iconFor(nextModuleTopic.id).color, iconMono: iconFor(nextModuleTopic.id).mono,
+      select: () => this.setState({ view: "roadmap", selectedModuleTopicId: nextModuleTopic.id, moduleTab: "lesson" })
+    } : null;
+
+    const mkReward = (r) => {
+      const iconColor = r.category === "food" ? "oklch(0.6 0.14 55)" : "oklch(0.55 0.13 230)";
+      const icons = ["candybar", "fries", "bubbletea", "pizza", "dinner", "coffee", "roadtrip", "tent", "plane", "globe"];
+      const iconFlags = {};
+      icons.forEach(i => { iconFlags["is" + i[0].toUpperCase() + i.slice(1)] = r.icon === i; });
+      return {
+        ...r, slotId: `store-${r.id}`, categoryLabel: r.category === "food" ? "Food" : "Travel",
+        iconBg: r.category === "food" ? "oklch(0.95 0.05 60)" : "oklch(0.93 0.05 220)",
+        iconColor, ...iconFlags,
+        disabled: u.tokens < r.cost, cursor: u.tokens < r.cost ? "not-allowed" : "pointer",
+        btnBg: u.tokens < r.cost ? "oklch(0.95 0.006 255)" : "oklch(0.55 0.16 255)",
+        btnColor: u.tokens < r.cost ? "oklch(0.6 0.006 255)" : "#fff",
+        btnLabel: u.tokens < r.cost ? "Not enough tokens" : "Redeem",
+        redeem: () => {
+          if (u.tokens < r.cost) return;
+          let uu = { ...this.state.users[this.state.currentUser] };
+          uu.tokens -= r.cost;
+          uu.redeemed = [{ id: r.id, name: r.name, cost: r.cost, date: Date.now() }, ...uu.redeemed];
+          this.commitUser(uu, false);
+        }
+      };
+    };
+
+    const modeCards = [
+      { title: "Coding Practice", desc: "LeetCode-style problems from the wiki — real execution, real grading.", color: "oklch(0.55 0.16 255)", mono: "</>", select: () => this.setState({ view: "practice" }) },
+      { title: "Interview Mode", desc: "Real asked questions with Socratic follow-ups.", color: "oklch(0.58 0.14 300)", mono: "Q&A", select: () => this.setState({ view: "interview" }) },
+      { title: "Flashcards", desc: "Quiz-style recall drills on every topic.", color: "oklch(0.5 0.14 145)", mono: "↻", select: () => this.setState({ view: "flashcards" }) }
+    ];
+
+    const continueRow = CODE_QUESTIONS
+      .filter(q => !u.completedCode.includes(q.id))
+      .slice(0, 10)
+      .map(q => ({
+        id: q.id, title: q.title, topicName: topicName(q.topic),
+        iconColor: iconFor(q.topic).color, iconMono: iconFor(q.topic).mono,
+        select: () => this.setState({ view: "practice", selectedCodeId: q.id, codeDraft: q.code, ...resetRunState })
+      }));
+    const hasContinueRow = continueRow.length > 0;
+
+    return {
+      isLoggedIn: true, isLoggedOut: false,
+      currentUser: this.state.currentUser, logout: () => this.setState({ currentUser: null }),
+      saveProgressToFile: () => this.saveProgressToFile(),
+      loadProgressFromFile: (e) => this.loadProgressFromFile(e),
+      showSidebar: !isMobile, showMobileNav: isMobile,
+      mobileBottomPad: isMobile ? "72px" : "0px",
+      contentPadding: isMobile ? "16px" : "28px 32px",
+      view: this.state.view, viewTitle: viewMeta[this.state.view].title,
+      navItems,
+      tokens: u.tokens, streak: u.streak || 0, daysComplete, progressPct, moduleTokens: MODULE_TOKENS,
+      isHome: this.state.view === "home", isRoadmap: this.state.view === "roadmap", isPractice: this.state.view === "practice",
+      isInterview: this.state.view === "interview", isFlashcards: this.state.view === "flashcards",
+      isLessons: this.state.view === "lessons", isStore: this.state.view === "store",
+      homeSubline: (u.streak || 0) > 1 ? `${u.streak}-day streak. Keep it going.` : "Ready to practice today?",
+      plantSectionDir: isMobile ? "column" : "row",
+      plantStemTopY, plantLeaf1Y, plantLeaf2Y, plantLeaf1Op, plantLeaf2Op, plantBudOp, plantFlowerOp, plantFlowerScale, plantFlowerColor,
+      plantHint, flowerBadges,
+      goRoadmap: () => this.setState({ view: "roadmap" }),
+      homeStatsCols: isMobile ? "1fr" : "repeat(2,1fr)",
+      modeCardsCols: isMobile ? "1fr" : "repeat(3,1fr)",
+      modeCards,
+      continueRow, hasContinueRow,
+      hasNextModule: !!nextModule, nextModule: nextModule || {},
+      goStore: () => this.setState({ view: "store" }),
+
+      dayGridCols: isMobile ? "repeat(4,1fr)" : "repeat(8,1fr)",
+      moduleDays,
+      modTopicIconColor: iconFor(selModTopic.id).color, modTopicIconMono: iconFor(selModTopic.id).mono,
+      modDay: selModIndex + 1, modTopicName: selModTopic.name, modComplete,
+      modTabsView,
+      isModTabLesson: this.state.moduleTab === "lesson", isModTabCode: this.state.moduleTab === "coding",
+      isModTabQA: this.state.moduleTab === "qa", isModTabFlash: this.state.moduleTab === "flash", isModTabTest: this.state.moduleTab === "test",
+      modLesson, ...modDiagFlags,
+      modCode, modHasCode: modCode.length > 0, modHasNoCode: modCode.length === 0,
+      modChains,
+      modCardsCount, modCardsDone, goModuleFlashcards,
+      dayTestQs, dayTestTotal, dayTestPassMark, dayTestSubmitDisabled,
+      dayTestSubmitted: this.state.dayTestSubmitted, dayTestNotSubmitted: !this.state.dayTestSubmitted,
+      dayTestResultLabel, dayTestResultColor,
+      submitDayTest: () => this.submitDayTest(),
+      retakeDayTest: () => this.setState({ dayTestQuestions: this.buildDayTest(selModTopic.id), dayTestAnswers: {}, dayTestSubmitted: false }),
+
+      noSelectedCode: !this.state.selectedCodeId, hasSelectedCode: !!this.state.selectedCodeId,
+      codeQuestionsView, selectedCode,
+      clearSelectedCode: () => this.setState({ selectedCodeId: null, runResult: null, running: false }),
+      codeLayoutCols: isMobile ? "1fr" : "minmax(280px,1fr) minmax(320px,1.2fr)",
+      codeDraft: this.state.codeDraft,
+      onCodeDraftChange: (e) => this.setState({ codeDraft: e.target.value }),
+      running: this.state.running,
+      runLabel: this.state.running ? "Running…" : "▶ Run",
+      submitLabel: this.state.running ? "Running…" : "Submit",
+      runCode: async () => {
+        if (!selectedCode || this.state.running) return;
+        if (selectedCode.mode === "design") { this.setState({ consoleTab: "testcase" }); return; }
+        this.setState({ running: true, consoleTab: "result", runResult: null });
+        const result = await this.engine.runProblem(selectedCode, this.state.codeDraft);
+        this.setState({ running: false, runResult: result });
+      },
+      submitCode: async () => {
+        if (!selectedCode || this.state.running) return;
+        if (selectedCode.mode === "design") {
+          this.award("code", selectedCode.id, selectedCode.topic);
+          this.setState({ consoleTab: "result", showRevealCode: true, runResult: null });
+          return;
+        }
+        this.setState({ running: true, consoleTab: "result" });
+        const result = await this.engine.runProblem(selectedCode, this.state.codeDraft);
+        if (result.ok) {
+          this.award("code", selectedCode.id, selectedCode.topic);
+          this.setState({ running: false, runResult: result, showRevealCode: true });
+        } else {
+          this.setState({ running: false, runResult: result });
+        }
+      },
+      isTestcaseTab: this.state.consoleTab === "testcase", isResultTab: this.state.consoleTab === "result",
+      showTestcaseTab: () => this.setState({ consoleTab: "testcase" }), showResultTab: () => this.setState({ consoleTab: "result" }),
+      testcaseTabColor: this.state.consoleTab === "testcase" ? "#fff" : "oklch(0.55 0.006 255)",
+      testcaseTabWeight: this.state.consoleTab === "testcase" ? 700 : 500,
+      testcaseTabBorder: this.state.consoleTab === "testcase" ? "oklch(0.55 0.16 255)" : "transparent",
+      resultTabColor: this.state.consoleTab === "result" ? "#fff" : "oklch(0.55 0.006 255)",
+      resultTabWeight: this.state.consoleTab === "result" ? 700 : 500,
+      resultTabBorder: this.state.consoleTab === "result" ? "oklch(0.55 0.16 255)" : "transparent",
+      showRevealCode: this.state.showRevealCode, notShowRevealCode: !this.state.showRevealCode,
+      celebrate: this.state.celebrate, confettiBits,
+      ...runViewFields,
+
+      chainsView, noSelectedChain: !this.state.selectedChainId, hasSelectedChain: !!this.state.selectedChainId,
+      selectedChain, followupPosition, hasMoreFollowups, isLastFollowup,
+      clearSelectedChain: () => this.setState({ selectedChainId: null, showChainAnswer: false }),
+      nextFollowup: () => this.setState({ followUpIndex: this.state.followUpIndex + 1 }),
+      selectedChainNotDone: selectedChain && !selectedChain.done,
+      finishChain: () => selectedChain && this.award("interview", selectedChain.id, selectedChain.topic),
+      toggleShowChainAnswer: () => this.setState({ showChainAnswer: !this.state.showChainAnswer }),
+      showChainAnswerLabel: this.state.showChainAnswer ? "Hide answer" : "Show answer",
+      showChainAnswer: this.state.showChainAnswer,
+
+      cardPosition: `${fi2 + 1} / ${flashDeck.length}`,
+      currentCard, cardFlipped: this.state.cardFlipped, cardNotFlipped: !this.state.cardFlipped, flipCardClass,
+      flipCard: () => this.setState({ cardFlipped: !this.state.cardFlipped }),
+      flipHint: this.state.cardFlipped ? "tap to see the question" : "tap to reveal the answer",
+      markKnown: () => { this.award("flash", fc.id, fc.topic); this.setState({ flashIndex: (fi2 + 1) % Math.max(1, flashDeck.length), cardFlipped: false }); },
+      markReview: () => this.setState({ flashIndex: (fi2 + 1) % Math.max(1, flashDeck.length), cardFlipped: false }),
+
+      lessonNavGroups, selectedLesson, selectedLessonIsTopic, selectedLessonIsGuide, relatedTopicsView, lessonsNavWidth: isMobile ? "100%" : "240px", lessonsDir: isMobile ? "column" : "row",
+      ...diagFlags,
+      goFlashForTopic: () => {
+        if (!selectedLessonIsTopic) return;
+        const nextIndex = Math.max(0, FLASHCARDS.findIndex(f => f.topic === selectedLesson.id));
+        this.setState({ view: "flashcards", flashIndex: nextIndex, cardFlipped: false });
+      },
+
+      storeGridCols: isMobile ? "1fr" : "repeat(3,1fr)",
+      storeCategories: ["All", "Food", "Travel"].map(cat => ({
+        label: cat, select: () => this.setState({ storeCategory: cat }),
+        bg: (this.state.storeCategory || "All") === cat ? "oklch(0.55 0.16 255)" : "#fff",
+        color: (this.state.storeCategory || "All") === cat ? "#fff" : "oklch(0.4 0.006 255)",
+        border: (this.state.storeCategory || "All") === cat ? "oklch(0.55 0.16 255)" : "oklch(0.88 0.006 255)"
+      })),
+      storeItemsView: REWARDS.filter(r => (this.state.storeCategory || "All") === "All" || ((this.state.storeCategory || "All") === "Food" ? r.category === "food" : r.category === "travel")).map(mkReward),
+      hasRedeemed: u.redeemed.length > 0,
+      redeemedView: u.redeemed.map(h => ({ name: h.name, cost: h.cost, dateLabel: new Date(h.date).toLocaleDateString() }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>
