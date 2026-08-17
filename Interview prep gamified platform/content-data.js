@@ -15,22 +15,22 @@ export const MODULE_TOKENS = 800;
 // colored badges rather than hand-drawn icon paths, so they render reliably
 // at any size (same spirit as Notion's page-icon monograms).
 export const ICONS = {
-  "js-scope": { color: "oklch(0.55 0.16 255)", mono: "Sc" },
-  "js-closures": { color: "oklch(0.52 0.17 265)", mono: "Cl" },
-  "js-this": { color: "oklch(0.58 0.15 245)", mono: "Th" },
-  "js-coercion": { color: "oklch(0.6 0.14 235)", mono: "Co" },
-  "js-async": { color: "oklch(0.54 0.16 275)", mono: "As" },
-  "js-utils": { color: "oklch(0.56 0.13 250)", mono: "Ut" },
-  "react-core": { color: "oklch(0.56 0.14 300)", mono: "Rc" },
-  "react-hooks": { color: "oklch(0.53 0.15 310)", mono: "Hk" },
-  "react-perf": { color: "oklch(0.58 0.16 320)", mono: "Pf" },
-  "react-state": { color: "oklch(0.52 0.13 290)", mono: "St" },
-  "react-routing": { color: "oklch(0.55 0.14 305)", mono: "Rt" },
-  "web-basics": { color: "oklch(0.55 0.1 190)", mono: "Hc" },
-  "git": { color: "oklch(0.62 0.15 55)", mono: "Gt" },
-  "machine-coding": { color: "oklch(0.6 0.18 350)", mono: "Mc" },
-  "scenario": { color: "oklch(0.5 0.12 275)", mono: "Sn" },
-  "managerial": { color: "oklch(0.48 0.03 255)", mono: "Hr" }
+  "js-scope": { color: "oklch(0.55 0.16 255)", mono: "Sc", style: "nested" },
+  "js-closures": { color: "oklch(0.52 0.17 265)", mono: "Cl", style: "rings" },
+  "js-this": { color: "oklch(0.58 0.15 245)", mono: "Th", style: "chevrons" },
+  "js-coercion": { color: "oklch(0.6 0.14 235)", mono: "Co", style: "chevrons" },
+  "js-async": { color: "oklch(0.54 0.16 275)", mono: "As", style: "rings" },
+  "js-utils": { color: "oklch(0.56 0.13 250)", mono: "Ut", style: "bars" },
+  "react-core": { color: "oklch(0.56 0.14 300)", mono: "Rc", style: "nested" },
+  "react-hooks": { color: "oklch(0.53 0.15 310)", mono: "Hk", style: "rings" },
+  "react-perf": { color: "oklch(0.58 0.16 320)", mono: "Pf", style: "bars" },
+  "react-state": { color: "oklch(0.52 0.13 290)", mono: "St", style: "chevrons" },
+  "react-routing": { color: "oklch(0.55 0.14 305)", mono: "Rt", style: "chevrons" },
+  "web-basics": { color: "oklch(0.55 0.1 190)", mono: "Hc", style: "nested" },
+  "git": { color: "oklch(0.62 0.15 55)", mono: "Gt", style: "bars" },
+  "machine-coding": { color: "oklch(0.6 0.18 350)", mono: "Mc", style: "nested" },
+  "scenario": { color: "oklch(0.5 0.12 275)", mono: "Sn", style: "chevrons" },
+  "managerial": { color: "oklch(0.48 0.03 255)", mono: "Hr", style: "bars" }
 };
 
 // `asked` and `learn` are {q, a} pairs — every question in a lesson now
