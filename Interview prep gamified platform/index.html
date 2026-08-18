@@ -481,7 +481,7 @@ a:hover { color: var(--ok3); text-decoration: underline; }
 
       <sc-if value="{{ noSelectedModule }}" hint-placeholder-val="{{ true }}">
       <div class="iq-enter" style="display:flex;flex-direction:column;gap:22px;max-width:1080px;margin:0 auto;width:100%">
-        <div style="font-size:13.5px;color:var(--ok8)">16 modules, one per day. Open a day, finish all five parts — lesson, coding test, Q&amp;A, flashcards, and the end-of-day test — to mark it complete and earn {{ moduleTokens }} tokens.</div>
+        <div style="font-size:13.5px;color:var(--ok8)">16 modules, one per day. Work through the lesson, coding test, Q&amp;A and flashcards, then take the end-of-day test — tokens are awarded purely on your test score (up to {{ moduleTokens }}/day), and you can retake the test anytime to earn more.</div>
         <div style="display:grid;grid-template-columns:{{ dayGridCols }};gap:14px">
           <sc-for list="{{ moduleDays }}" as="d" hint-placeholder-count="16">
             <button onclick="{{ d.select }}" title="{{ d.title }}" class="iq-day iq-card iq-tile-enter" style="position:relative;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:180px;background:{{ d.bg }};border:{{ d.border }};border-radius:16px;padding:18px 16px;cursor:pointer;font-family:'Source Sans 3',sans-serif;animation-delay:{{ d.animDelay }}">
@@ -1082,6 +1082,7 @@ a:hover { color: var(--ok3); text-decoration: underline; }
             </sc-if>
             <sc-if value="{{ dayTestSubmitted }}" hint-placeholder-val="{{ false }}">
               <div style="font-size:14px;font-weight:700;color:{{ dayTestResultColor }}">{{ dayTestResultLabel }}</div>
+              <div style="font-size:13px;font-weight:600;color:var(--ok21)">{{ dayTestTokensLabel }}</div>
               <sc-for list="{{ dayTestQs }}" as="dq" hint-placeholder-count="5">
                 <div style="display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--ok9);border-radius:10px;padding:14px">
                   <div style="font-size:13px;font-weight:600">{{ dq.n }}. {{ dq.q }}</div>
@@ -1909,7 +1910,7 @@ class Component extends DCLogic {
   }
 
   saveUsers(users) { localStorage.setItem("iq_users_v2", JSON.stringify(users)); }
-  newUser() { return { tokens: 0, completedCode: [], completedInterview: [], knownFlashcards: [], passedDayTests: [], tokensAwardedDays: [], redeemed: [], streak: 0, lastActiveDate: null }; }
+  newUser() { return { tokens: 0, completedCode: [], completedInterview: [], knownFlashcards: [], passedDayTests: [], testTokens: {}, redeemed: [], streak: 0, lastActiveDate: null }; }
   todayStr() { return new Date().toISOString().slice(0, 10); }
   bumpStreak(u) {
     const today = this.todayStr();
@@ -1938,13 +1939,6 @@ class Component extends DCLogic {
       && cardIds.every(id => u.knownFlashcards.includes(id))
       && (u.passedDayTests || []).includes(topicId);
   }
-  applyDayCompletion(u, topicId) {
-    if ((u.tokensAwardedDays || []).includes(topicId) || !this.isDayComplete(topicId, u)) return { u, celebrate: false };
-    return {
-      u: { ...u, tokens: (u.tokens || 0) + this.data.MODULE_TOKENS, tokensAwardedDays: [...(u.tokensAwardedDays || []), topicId] },
-      celebrate: true
-    };
-  }
   commitUser(u, celebrate) {
     const users = { ...this.state.users, [this.state.currentUser]: u };
     this.saveUsers(users);
@@ -1955,8 +1949,7 @@ class Component extends DCLogic {
     let u = { ...this.state.users[this.state.currentUser] };
     const key = { code: "completedCode", interview: "completedInterview", flash: "knownFlashcards" }[kind];
     if (!u[key].includes(id)) u = { ...u, [key]: [...u[key], id] };
-    const { u: u2, celebrate } = this.applyDayCompletion(u, topicId);
-    this.commitUser(u2, celebrate);
+    this.commitUser(u, false);
   }
   buildDayTest(topicId) {
     const { FLASHCARDS } = this.data;
@@ -1973,14 +1966,25 @@ class Component extends DCLogic {
     const topicId = this.state.selectedModuleTopicId;
     const qs = this.state.dayTestQuestions;
     const answers = this.state.dayTestAnswers;
+    const total = qs.length;
     const score = qs.filter((q, i) => answers[i] === q.correctIndex).length;
-    const passed = score >= Math.ceil(qs.length * 0.8);
+    const passed = score >= Math.ceil(total * 0.8);
     this.setState({ dayTestSubmitted: true, dayTestScore: score });
-    if (!passed) return;
     let u = { ...this.state.users[this.state.currentUser] };
-    if (!(u.passedDayTests || []).includes(topicId)) u = { ...u, passedDayTests: [...(u.passedDayTests || []), topicId] };
-    const { u: u2, celebrate } = this.applyDayCompletion(u, topicId);
-    this.commitUser(u2, celebrate);
+    if (passed && !(u.passedDayTests || []).includes(topicId)) u = { ...u, passedDayTests: [...(u.passedDayTests || []), topicId] };
+    // Tokens come only from test marks. Retaking the test can only ever top up
+    // to a new best score's token value — never claw back what a worse retake would imply.
+    const earnedTokens = total ? Math.round((score / total) * this.data.MODULE_TOKENS) : 0;
+    const testTokens = { ...(u.testTokens || {}) };
+    const alreadyCredited = testTokens[topicId] || 0;
+    let celebrate = false;
+    if (earnedTokens > alreadyCredited) {
+      const delta = earnedTokens - alreadyCredited;
+      testTokens[topicId] = earnedTokens;
+      u = { ...u, tokens: (u.tokens || 0) + delta, testTokens };
+      celebrate = true;
+    }
+    this.commitUser(u, celebrate);
   }
 
   saveProgressToFile() {
@@ -2360,6 +2364,12 @@ class Component extends DCLogic {
     const dayTestPassed = this.state.dayTestScore >= Math.ceil(dayTestTotal * 0.8);
     const dayTestResultLabel = this.state.dayTestSubmitted ? (dayTestPassed ? `✓ Passed — ${this.state.dayTestScore}/${dayTestTotal}` : `${this.state.dayTestScore}/${dayTestTotal} — try again`) : "";
     const dayTestResultColor = dayTestPassed ? "var(--ok34)" : "var(--ok66)";
+    const dayTestTokensForAttempt = dayTestTotal ? Math.round((this.state.dayTestScore / dayTestTotal) * MODULE_TOKENS) : 0;
+    const dayTestBestTokens = (u.testTokens || {})[selModTopic.id] || 0;
+    const dayTestIsNewBest = this.state.dayTestSubmitted && dayTestTokensForAttempt >= dayTestBestTokens && dayTestTokensForAttempt > 0;
+    const dayTestTokensLabel = this.state.dayTestSubmitted
+      ? (dayTestIsNewBest ? `🪙 ${dayTestTokensForAttempt} tokens credited` : `🪙 Best credited: ${dayTestBestTokens} tokens — beat your score to earn more`)
+      : "";
     // one-question-at-a-time navigation while taking the test
     const dayTestIndex = Math.min(this.state.dayTestIndex || 0, Math.max(0, dayTestTotal - 1));
     const dayTestCurrent = dayTestQs[dayTestIndex] || { n: 0, q: "", options: [] };
@@ -2484,7 +2494,7 @@ class Component extends DCLogic {
       modFlipCard, modMarkKnown, modMarkReview, modHasCards: modAllCards.length > 0,
       dayTestQs, dayTestTotal, dayTestPassMark, dayTestSubmitDisabled,
       dayTestSubmitted: this.state.dayTestSubmitted, dayTestNotSubmitted: !this.state.dayTestSubmitted,
-      dayTestResultLabel, dayTestResultColor,
+      dayTestResultLabel, dayTestResultColor, dayTestTokensLabel,
       dayTestCurrent, dayTestPosition, dayTestHasPrev, dayTestHasNext, dayTestIsLast, dayTestCurrentUnanswered, dayTestPrev, dayTestNext,
       submitDayTest: () => this.submitDayTest(),
       retakeDayTest: () => this.setState({ dayTestQuestions: this.buildDayTest(selModTopic.id), dayTestAnswers: {}, dayTestSubmitted: false, dayTestIndex: 0 }),
