@@ -1,6 +1,6 @@
 # InterviewQuest (ReactQuest)
 
-A gamified, 16-day interview-prep platform for **React / Frontend developers (3+ years)** targeting India IT-services roles (TCS, Infosys, Wipro, Cognizant, Accenture, Capgemini and similar). It runs entirely in the browser: no backend, no build step, no password.
+A gamified, 16-day interview-prep platform for **React / Frontend developers (3+ years)** targeting India IT-services roles . It runs entirely in the browser: no backend, no build step, no password.
 
 ![Dashboard](docs/screenshot-home.png)
 
